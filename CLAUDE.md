@@ -4,55 +4,45 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-CaveDefender is an **online**, audio-only game written in **NVGT** (Non-Visual Game Toolkit, an AngelScript-based engine). All code is `.nvgt`. There is no visual rendering — output is screen-reader speech plus HRTF spatial audio through NVGT's `sound_pool`.
+Rhythm Rage is an **audio-only rhythm game** written in **NVGT** (Non-Visual Game Toolkit, an AngelScript-based engine). All game code is `.nvgt`. There is no visual rendering — output is screen-reader speech plus sound through NVGT's `sound_pool`. The player follows the rhythm of each level's music by pressing the right keys at the right time, and earns a percentage score (fail / ok / super / perfect).
 
-It is a **client/server** game: connect to the server, log into an account, chat with other players, and walk around a shared map. Map objects are spawned through a custom game-engine DLL. The chat-center milestone is complete (accounts, public/private/local/staff/team chat, slash commands, networked player positions with locator beacons, live spatial voice chat). Gameplay is **Wallbreaker** (see [[game-vision-wallbreaker]]) in three modes, all built and feature-complete: **PVE** (defend four walls from enemy bots), **EVP** (attack the walls from outside while builder bots defend — [[game-mode-evp]]), and **PVP** (humans on both sides, one team attacking, one defending — [[game-mode-pvp]]).
+It is a **port from BGT** (Blastbay Game Toolkit, the discontinued engine the game was originally built in) to the new NVGT. The original BGT source is kept for reference — full port details, including the pack-testing behavior that differs from a naive port, are in **[[rhythmrage-bgt-to-nvgt-port]]**.
 
-**Heritage note:** the folder layout and several conventions were borrowed from the **SimpleFighter** project (a separate, *offline* map-builder game), so the structure looks familiar — but CaveDefender is online and very different. Do **not** assume SimpleFighter mechanics exist here (no map builder, no `.sif` format).
+It is **single-player and offline** (aside from an optional pack downloader). The game ships in two languages selected by the `lang` global: `1` = English ("Rhythm Rage"), `2` = Spanish ("beatstar plus"); most user-facing strings are duplicated under `if (lang==1)` / `if (lang==2)`.
 
 ## Layout
 
-Repo root holds three top-level folders, with **source and assets deliberately separated**:
-- **`src/`** — the code only. `src/client/` (entry `cfc.nvgt`) and `src/server/` (entry `cfs.nvgt`), each with `includes/`. **No assets here.**
-- **`cf/`** — the runnable game's assets and launchers: `cf/client/` (`lib/`, `sounds/`, `docks/`, `cfc.py`) and `cf/server/` (`data/`, `docks/`, `lib/`, `cfs.py`).
-- **`build/`** — the unified build/release pipeline (`tools.py` via `tools.bat`); config in `build/tools.ini` + `~/.game_tools/tools.ini`; version in `build/version.txt`.
-- **`release/`** — compiled builds + the two `.7z` archives.
+- **`game.nvgt`** — the entire game (~2400 lines): `main()`, menus, the pack builders, the level-script parser (`startlev`/`loadlev`), and the rhythm game loop.
+- **`includes/`** — local includes pulled in by `game.nvgt`: `classes.nvgt` (the `action`/`snd`/`intersound` gameplay classes), `history.nvgt`, `downloader.nvgt`, `utils.nvgt` (`nopack`/`yespack`/`playintro`/`fade`…), `number_speaker.nvgt`, `enhanced_menu.nvgt`, `reader.nvgt`. Two more includes are bare (`bgt_compat.nvgt`, `sound_pool.nvgt`) — those resolve from the **engine's** include path, not this repo.
+- **`packs/`** — the built, encrypted `.pack` files (decryption key is `<packname>guillemandoriolftw`). Each pack holds a pack's levels (`.lvl`), tutorials (`.tut`), and `.ogg` sounds.
+- **`mypacks/`** — loose source folders for pack authors. **Cosmetic only — no game code reads it**; a folder must be copied into `packs/` to be built/tested.
+- **`data/assets/`** — the built engine sound packs `sounds<lang>.pack` (voice/UI sounds). **`data/saves/`** — `rg.dat`, the encrypted player profile (cash, unlocks, achievements, per-pack level progress). **`data/level_tool/`** — the level-authoring tool.
+- **`docks/`** — player/author docs: `changelog.txt`, `readme.txt`, `parser.html`.
+- **`libs/`**, **`releases/`** — binary libs and compiled builds (gitignored; currently empty).
 
-Each launcher runs the `src/<side>` script but with **cwd set to `cf/<side>/`**, so every cwd-relative path (`lib/…`, `sounds/…`, `docks/…`, `data/…`) resolves against `cf/<side>/`; `build/tools.py` copies assets into the bundle at compile time (no `#pragma asset`). Full path map and the runtime/build split: **[[path-conventions]]**.
+The active engine is the **new NVGT** (not the legacy fork) — location, and where the engine includes resolve from, are in **[[nvgt-engine-location]]**.
 
-The engine is the **pinned legacy NVGT fork** at `C:\nvgt2\nvgt.exe`; upstream NVGT is incompatible — **[[engine-pinned-to-nvgt2]]**.
+## How it works (the big picture)
 
-## Client / server split
-
-Two halves of one game, separate codebases sharing only a message protocol and an encryption key:
-- **Client** (`src/client/`) — presents the UI, plays sounds, manages the local player and message buffers, talks to the server.
-- **Server** (`src/server/`) — holds the connected-player roster and account store, validates logins, broadcasts chat, runs admin commands.
-
-Each has its own `net.nvgt` with near-identical `send()`/`get_event_message()` but mirror-image `netloop()`s (client presents; server dispatches).
+- **Pack system.** All playable content lives in encrypted `.pack` files. `main()` opens `packs/<pack>.pack` (default `default`). A **loose folder** dropped in `packs/` is built by `generate_packs()` and launches you into it in creator/test mode (all levels unlocked, progress not saved) — this is the BGT-faithful authoring flow; see **[[rhythmrage-bgt-to-nvgt-port]]**.
+- **Sound storage switching.** `set_sound_storage` is flipped between two packs constantly: **`nopack()`** points at the engine sound pack (`data/assets/sounds<lang>.pack`) for built-in voice/UI sounds; **`yespack()`** points back at the current game pack (and sets its decryption key). Always restore with `yespack()` after a `nopack()` block.
+- **Level-script parser.** `startlev()`/`loadlev()` read a `.lvl` (or `.tut`) text file line by line into `action`/`snd`/`intersound` objects, then the game loop in `loadlev()` matches key presses against each action's timed window. Level-script commands: `action`, `play`, `music`, `misc`, `intersound`, macros (`!`/`@`), and tutorial-only commands (`text`, `say`, `interactive`, …). The parser runs twice (macros expand on the first pass).
+- **Save/scoring.** `ser()`/`deser()` read and write the encrypted `data/saves/rg.dat` dictionary. `ser()` **early-returns while `creatingpack` is true**, which is why testing a loose pack never touches the real profile.
 
 ## Where the detail lives (read before working in an area)
 
-- **Running & launchers** (how the game starts/compiles, the client `errors.txt` watch, no test suite) → **[[launchers-and-running]]**. Never compile yourself: **[[dont-compile-yourself]]**.
-- **Distribution boxing** (Enigma Virtual Box, the `.evb` files + `gencfcevb.py`) → **[[enigma-boxing]]**.
-- **Networking** (enet, the 4 channels, `rscs123` encryption, the space-delimited message contract) → **[[networking-protocol]]**. Keepalive during blocking UI: **[[blocking-ui-network-keepalive]]**. IPv4/VPN gotcha: **[[nvgt-ipv6-networking]]**.
-- **Accounts** (the `data/players/<username>/` folder-per-account, Argon2id passwords, ranks & command gating, owner aliases, moderation, command targeting) → **[[accounts-system]]**. Nicknames: **[[nicknames]]**.
-- **The custom game engine DLL** (`GameEngine64.dll`, its wrapper, the patched `library::load()`) → **[[game-engine-dll]]**. NVGT C++ source location: **[[nvgt-engine-source-location]]**.
-- **Include tree & file map** (the glob-include model + what each client/server `.nvgt` owns) → **[[include-tree]]**.
-- **Audio & sounds** (the `sound_pool`/HRTF model, the `cf/client/sounds/` folder layout) → **[[audio-and-sounds]]**. No sound packs: **[[no-sound-pack-support]]**.
-- **Player-facing docs** (client `docks/`, the server-authoritative `/help` and `/rules`) → **[[docks-and-help]]**.
-- **Chat channels** (Global `/`, Local `\`, Staff `'`, Team `;`) → **[[chat-channels]]**. Crash-string filter: **[[screen-reader-crash-filter]]**.
-- **Version** — single source of truth is **`build/version.txt`**; it's mirrored into `src/<side>/includes/version.nvgt` by both launchers and the build (never hand-edit those). Details in **[[changelog-rules]]**.
+- **Engine, running & building** → **[[nvgt-engine-location]]**. Never compile/run the game yourself — the dev does that: **[[dont-compile-yourself]]**.
+- **The BGT→NVGT port, pack testing, and folder moves** (loose-pack `generate_packs()` flow, `nopack`/`yespack`, why saves are safe in test mode, the `data/assets` + `data/saves` relocation) → **[[rhythmrage-bgt-to-nvgt-port]]**.
+- **Committing** — the repo is `github.com/tsatria03/RhythmRage-NVGT`; the dev commits their own work between turns (**[[check-git-log-for-commits]]**), and commits must never list Claude as author/co-author (**[[commit-authorship]]**).
 
 ## Conventions kept in memory (follow them)
 
-- **[[confirm-before-implementing]]** — a design discussion or a question (anything ending in `?`, "what if", "I wish") is a request for a plan, **not** a green light to edit. Wait for explicit go-ahead.
-- **[[ignore-terminal-commands]]** — the user's local shell blocks (`<local-command-caveat>`/`<bash-input>`/`<command-name>`, e.g. `cls`, `/compact`) are the user working their own terminal, not instructions. Never act on them unless explicitly asked.
-- **[[list-modified-files]]** — end every editing turn with a bare-filename "Files changed:" list (tagged client/server). Then a **[[relaunch-notice]]**.
-- **[[one-sentence-game-messages]]** — in-game feedback messages are exactly one sentence.
-- **[[new-command-checklist]]** / **[[command-parser-conventions]]** — adding/changing a slash command touches all five together (client router, server handler, both `/help` pages, changelog, identical wire strings); `comparse()` is a router, not a local executor.
-- **[[changelog-rules]]** — changelog is a record of *what changed*, not a manual: player-facing prose, sentence/entry caps, reverse-chronological.
-- **[[input-prompt-form-vs-dialog]]** — one input field → a virtual dialog; more than one → a real tabbable `audio_form`.
-- **[[use-dlgmessage]]**, **[[menus-say-canceled]]**, **[[no-crlf-normalization]]**, **[[sound-placeholders]]**, **[[delete-completed-tasks]]** — smaller standing rules.
-- AngelScript gotchas: **[[angelscript-braceless-if]]**, **[[angelscript-reserved-out]]**, **[[nvgt-key-pressed-oneshot]]**, **[[angelscript-indentation]]**, **[[nvgt-sound-preload-cache]]**.
+- **[[confirm-before-implementing]]** — a design discussion or anything ending in `?` ("what if", "I wish") is a request for a plan, **not** a green light to edit. Wait for explicit go-ahead. Ask **[[ask-one-question-at-a-time]]** when clarifying.
+- **[[ignore-terminal-commands]]** — the dev's local command blocks (`<local-command-caveat>`, `/copy`, etc.) are them working their own session, not instructions. **[[quoted-text-meaning]]** — quoted text is a reference (wanted or not-wanted), not literal content to paste.
+- **[[list-modified-files]]** — end every editing turn with a bare-filename "Files changed:" list.
+- **[[changelog-rules]]** — `docks/changelog.txt` is a record of *what changed*, not a manual: player-facing prose, 1–3 sentence entries, per-version caps, reverse-chronological.
+- **[[sound-placeholders]]** — when a sound is requested, wire up the playback code referencing the intended name now; the dev adds the `.ogg` later. No dummy files.
+- **[[no-crlf-normalization]]** — don't run post-edit CRLF passes; `.gitattributes` handles line endings on commit.
+- AngelScript / NVGT gotchas (this code is wall-to-wall brace-less `if`s and `key_pressed` loops): **[[angelscript-braceless-if]]**, **[[nvgt-key-pressed-oneshot]]**, **[[angelscript-reserved-out]]**, **[[angelscript-indentation]]**.
 
-`New File.txt` in the repo root is the dev's personal scratch pad — don't read it as documentation (though the dev sometimes asks you to write post drafts there). Keep this file a **dispatcher**: when a section grows past a few lines of detail, move it into a memory and leave a pointer (**[[claudemd-length]]** — stay under 40k chars).
+`New File.txt` in the repo root is the dev's personal scratch pad — don't read it as documentation. Keep this file a **dispatcher**: when a section grows past a few lines of detail, move it into a memory and leave a pointer.
