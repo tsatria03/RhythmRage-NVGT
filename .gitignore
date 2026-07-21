@@ -2,12 +2,18 @@
 New File*.txt
 
 # Compiled release builds
-release/
+releases/
 
 # Binary engine libraries (DLLs + bundled tools.
-lib/
+libs/
 
 # Binary media assets
+*.pack
 mypacks/
 packs/
 sounds/
+sounds2/
+data/assets/
+
+# Player save data
+data/saves/

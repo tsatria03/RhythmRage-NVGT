@@ -177,7 +177,7 @@ double percent(double v1,double v2) {
 return floor(v1 / v2 * 100);
 }
 void nopack() {
-set_sound_storage(path+"sounds"+lang+".pack");
+set_sound_storage(path+"data/assets/sounds"+lang+".pack");
 }
 void yespack() {
 set_sound_storage(path+"packs/"+pack+".pack");

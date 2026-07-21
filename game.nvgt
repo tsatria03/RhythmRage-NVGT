@@ -170,13 +170,14 @@ if (installed) path=DIRECTORY_APPDATA+"/Oriol Gomez/";
 directory_create(path);
 if (installed) path=DIRECTORY_APPDATA+"/Oriol Gomez/rg/";
 directory_create(path+"packs");
-directory_create("save");
+directory_create(path+"data/assets");
+directory_create("data/saves");
 if (screen_reader_is_running(1)) install_keyhook();
 sl="speaker_"+lang+"_";
 vo.prepend=sl+"num_";
 if (lang==2) vo.include_and=true;
 vo.append="";
-set_sound_storage(path+"sounds"+lang+".pack");
+set_sound_storage(path+"data/assets/sounds"+lang+".pack");
 lockerror.load("lock_error");
 oklevel.load("oklevel");
 faillevel.load("faillevel");
@@ -199,7 +200,7 @@ void generate_soundpack() {
 	if (files.length()==0) {
 				}
 	else {
-package.create(path+"sounds"+lang+".pack");
+package.create(path+"data/assets/sounds"+lang+".pack");
 		for(uint counter=0; counter<files.length(); counter++)
 		{
 			if (string_contains(files[counter],"speaker_",1)!=-1) {
@@ -473,16 +474,16 @@ data.set("achievements",achievements);
 string srld=serialize(data);
 string esrld=string_encrypt(srld,"soyelputoamo");
 file fld;
-fld.open("save/rg.dat","wb");
+fld.open("data/saves/rg.dat","wb");
 fld.write(esrld);
 fld.close();
 }
 void deser() {
 cash=0;
 unlocks="default.pack,";
-if(file_exists("save/rg.dat")) {
+if(file_exists("data/saves/rg.dat")) {
 file fld;
-fld.open("save/rg.dat","rb");
+fld.open("data/saves/rg.dat","rb");
 string dsr=fld.read();
 dsr=string_decrypt(dsr,"soyelputoamo");
 dictionary data=deserialize(dsr);
