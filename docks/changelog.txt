@@ -1,0 +1,15 @@
+﻿New in 1.0.
+Fixed loose pack testing: dropping a pack folder into the packs folder again builds it and loads you straight into it in creator/test mode with all levels unlocked, without saving progress or achievements to your profile, and rebuilds it every launch so your edits show up right away.
+Converted the game from BGT to NVGT.
+Added keys abcdefghijklmnopqrstuvwxyz1234567890 for actions!
+The q key doesn't quit anymore because its a possible action, instead you should use escape now.
+The reaction time can now be modified from within the level by saying misc reaction=value. default is 150, 75 too early and 75 late.
+Changed some of the levels to make it easier.
+You can now configure keyboard delay!
+Fixed a bug when saving data.
+Added a bunch of fixes for debug mode.
+Added page up and page down as music volume keys for menus.
+Added a fail= for requires.
+You can now listen to a perfecct run of a level.
+Change tutorial question for tutorial/play/run menu.
+Fixed very important file saving bug.

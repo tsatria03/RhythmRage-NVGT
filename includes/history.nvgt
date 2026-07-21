@@ -1,0 +1,253 @@
+#include "reader.nvgt"
+class message_history {
+string[] messages;
+bool auto_move_to_end=false;
+int modifier=KEY_LMENU;
+int modifier2=KEY_LCONTROL;
+bool pauses_allowed=true;
+int position=0;
+int reader_mode=4; //defaults to NVDA because I am cool, can of course change later.
+reader rd;
+message_history() {
+reader_mode=this.rd.init(); //we don't really need to do much more in the constructor.
+}
+void add(string message,bool interrupt=false,bool pause=false) {
+this.rd.say(message,interrupt);
+messages.insert_at(0,message);
+if (!auto_move_to_end) this.position++;
+if (auto_move_to_end) this.position=0;
+if (messages.length()>=100) {
+messages.remove_last();
+}
+if (pause && pauses_allowed) {
+while (true) {
+bool check=this.process(); //we don't want to display an error message if we're checking for a history message while pausing, do we?
+if (!check) {
+int[] keys=keys_pressed();
+if (keys.length()>0) {
+if (keys[0]==KEY_Q) {//key q
+this.pauses_allowed=false;
+if (lang==1) this.rd.say("OK, no more pauses. Sorry!");
+if (lang==2) this.rd.say("OK, me llevo las pausas. Sorry.");
+break;
+}//else break key q
+else if (keys[0]!=KEY_RETURN) {
+this.rd.say(message,true);
+if (lang==1) this.rd.say("press return to continue.");
+if (lang==2) this.rd.say("Pulsa enter para seguir");
+}//not return
+else if (keys[0]==KEY_RETURN) {
+break;
+}//return
+}//length
+}//process check
+wait(5);
+}//while
+}//paused
+}//function
+bool process() {
+if (key_down(modifier)&&key_pressed(KEY_1)) {
+if (messages.length()==0) {
+if (lang==1) this.rd.say("no history.");
+if (lang==2) this.rd.say("no hay historial.");
+return true;
+}
+if (messages.length()<1) {
+if (lang==1) rd.say("No more messages.");
+if (lang==2) rd.say("No hay más mensajes.");
+return true;
+}
+this.rd.say(this.messages[0]);
+return true;
+}
+if (key_down(modifier)&&key_pressed(KEY_2)) {
+if (messages.length()==0) {
+if (lang==1) this.rd.say("no history.");
+if (lang==2) this.rd.say("no hay historial.");
+return true;
+}
+if (messages.length()<2) {
+if (lang==1) rd.say("No more messages.");
+if (lang==2) rd.say("No hay más mensajes.");
+return true;
+}
+
+this.rd.say(this.messages[1]);
+return true;
+}
+if (key_down(modifier)&&key_pressed(KEY_3)) {
+if (messages.length()==0) {
+if (lang==1) this.rd.say("no history.");
+if (lang==2) this.rd.say("no hay historial.");
+return true;
+}
+if (messages.length()<3) {
+if (lang==1) rd.say("No more messages.");
+if (lang==2) rd.say("No hay más mensajes.");
+return true;
+}
+
+this.rd.say(this.messages[2]);
+return true;
+}
+if (key_down(modifier)&&key_pressed(KEY_4)) {
+if (messages.length()==0) {
+if (lang==1) this.rd.say("no history.");
+if (lang==2) this.rd.say("no hay historial.");
+return true;
+}
+if (messages.length()<4) {
+if (lang==1) rd.say("No more messages.");
+if (lang==2) rd.say("No hay más mensajes.");
+return true;
+}
+
+this.rd.say(this.messages[3]);
+return true;
+}
+if (key_down(modifier)&&key_pressed(KEY_5)) {
+if (messages.length()==0) {
+if (lang==1) this.rd.say("no history.");
+if (lang==2) this.rd.say("no hay historial.");
+return true;
+}
+if (messages.length()<5) {
+if (lang==1) rd.say("No more messages.");
+if (lang==2) rd.say("No hay más mensajes.");
+return true;
+}
+
+this.rd.say(this.messages[4]);
+return true;
+}
+if (key_down(modifier)&&key_pressed(KEY_6)) {
+if (messages.length()==0) {
+if (lang==1) this.rd.say("no history.");
+if (lang==2) this.rd.say("no hay historial.");
+return true;
+}
+if (messages.length()<6) {
+if (lang==1) rd.say("No more messages.");
+if (lang==2) rd.say("No hay más mensajes.");
+return true;
+}
+
+this.rd.say(this.messages[5]);
+return true;
+}
+if (key_down(modifier)&&key_pressed(KEY_7)) {
+if (messages.length()==0) {
+if (lang==1) this.rd.say("no history.");
+if (lang==2) this.rd.say("no hay historial.");
+return true;
+}
+if (messages.length()<7) {
+if (lang==1) rd.say("No more messages.");
+if (lang==2) rd.say("No hay más mensajes.");
+return true;
+}
+
+this.rd.say(this.messages[6]);
+return true;
+}
+if (key_down(modifier)&&key_pressed(KEY_8)) {
+if (messages.length()==0) {
+if (lang==1) this.rd.say("no history.");
+if (lang==2) this.rd.say("no hay historial.");
+return true;
+}
+if (messages.length()<8) {
+if (lang==1) rd.say("No more messages.");
+if (lang==2) rd.say("No hay más mensajes.");
+return true;
+}
+
+this.rd.say(this.messages[7]);
+return true;
+}
+if (key_down(modifier)&&key_pressed(KEY_9)) {
+if (messages.length()==0) {
+if (lang==1) this.rd.say("no history.");
+if (lang==2) this.rd.say("no hay historial.");
+return true;
+}
+if (messages.length()<9) {
+if (lang==1) rd.say("No more messages.");
+if (lang==2) rd.say("No hay más mensajes.");
+return true;
+}
+
+this.rd.say(this.messages[8]);
+return true;
+}
+if (key_down(modifier)&&key_pressed(KEY_0)) {
+if (messages.length()==0) {
+if (lang==1) this.rd.say("no history.");
+if (lang==2) this.rd.say("no hay historial.");
+return true;
+}
+if (messages.length()<10) {
+if (lang==1) rd.say("No more messages.");
+if (lang==2) rd.say("No hay más mensajes.");
+return true;
+}
+
+this.rd.say(this.messages[9]);
+return true;
+}
+if (key_down(modifier2)&&key_pressed(KEY_NEXT)) {
+if (messages.length()==0) {
+if (lang==1) this.rd.say("no history.");
+if (lang==2) this.rd.say("no hay historial.");
+return true;
+}
+this.position=0;
+this.rd.say(this.messages[this.position]);
+return true;
+}
+if (key_down(modifier2)&&key_pressed(KEY_PRIOR)) {
+if (messages.length()==0) {
+if (lang==1) this.rd.say("no history.");
+if (lang==2) this.rd.say("no hay historial.");
+return true;
+}
+this.position=messages.length()-1;
+this.rd.say(this.messages[this.position]);
+return true;
+}
+if (key_pressed(KEY_NEXT)) {
+if (messages.length()==0) {
+if (lang==1) this.rd.say("no history.");
+if (lang==2) this.rd.say("no hay historial.");
+return true;
+}
+this.position--;
+if (this.position<0) {
+this.position=0;
+if (lang==1) this.rd.say("last");
+if (lang==2) this.rd.say("último");
+}
+this.rd.say(this.messages[this.position]);
+return true;
+}//prior
+if (key_pressed(KEY_PRIOR)) {
+if (messages.length()==0) {
+if (lang==1) this.rd.say("no history.");
+if (lang==2) this.rd.say("no hay historial.");
+return true;
+}
+this.position++;
+if (this.position>this.messages.length()-1){
+this.position=messages.length()-1;
+if (lang==1) this.rd.say("first");
+if (lang==2) this.rd.say("primero");
+};
+this.rd.say(this.messages[this.position]);
+return true;
+}//prior
+return false;
+}//function
+void say(string message,bool interrupt=false) {
+this.rd.say(message,interrupt);
+}//function
+}//class
