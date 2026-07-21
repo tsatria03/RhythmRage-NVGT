@@ -1,4 +1,6 @@
 ﻿New in 1.0.
+The level tool now lets you pick which pack to work on from a menu, so you can keep all your pack folders in the mypacks folder instead of only one at a time.
+Added a level tool for pack creators, a separate program that plays a sound file and helps you find the exact millisecond positions and BPM marks you need when timing a level's sounds and actions.
 Fixed loose pack testing: dropping a pack folder into the packs folder again builds it and loads you straight into it in creator/test mode with all levels unlocked, without saving progress or achievements to your profile, and rebuilds it every launch so your edits show up right away.
 Converted the game from BGT to NVGT.
 Added keys abcdefghijklmnopqrstuvwxyz1234567890 for actions!

@@ -14,10 +14,11 @@ It is **single-player and offline** (aside from an optional pack downloader). Th
 
 - **`game.nvgt`** — the entire game (~2400 lines): `main()`, menus, the pack builders, the level-script parser (`startlev`/`loadlev`), and the rhythm game loop.
 - **`includes/`** — local includes pulled in by `game.nvgt`: `classes.nvgt` (the `action`/`snd`/`intersound` gameplay classes), `history.nvgt`, `downloader.nvgt`, `utils.nvgt` (`nopack`/`yespack`/`playintro`/`fade`…), `number_speaker.nvgt`, `enhanced_menu.nvgt`, `reader.nvgt`. Two more includes are bare (`bgt_compat.nvgt`, `sound_pool.nvgt`) — those resolve from the **engine's** include path, not this repo.
+- **`leveltool.nvgt`** — a standalone authoring companion (a separate program, NOT part of the game): navigate a pack's `.ogg`, find millisecond positions and BPM marks for timing a level script, and copy them to the clipboard. Scans `mypacks/` and lets you pick which pack to work on; reuses `includes/enhanced_menu.nvgt` + `includes/history.nvgt`. Its `r` (run) key launches `game.exe` when compiled, else `game.nvgt`. Level-script command reference: `docks/parser.md`.
 - **`packs/`** — the built, encrypted `.pack` files (decryption key is `<packname>guillemandoriolftw`). Each pack holds a pack's levels (`.lvl`), tutorials (`.tut`), and `.ogg` sounds.
-- **`mypacks/`** — loose source folders for pack authors. **Cosmetic only — no game code reads it**; a folder must be copied into `packs/` to be built/tested.
-- **`data/assets/`** — the built engine sound packs `sounds<lang>.pack` (voice/UI sounds). **`data/saves/`** — `rg.dat`, the encrypted player profile (cash, unlocks, achievements, per-pack level progress). **`data/level_tool/`** — the level-authoring tool.
-- **`docks/`** — player/author docs: `changelog.txt`, `readme.txt`, `parser.html`.
+- **`mypacks/`** — loose source folders for pack authors. The **main game never reads it** (a folder must be copied into `packs/` to be built/tested), but `leveltool.nvgt` scans it to pick which pack to author.
+- **`data/assets/`** — the built engine sound packs `sounds<lang>.pack` (voice/UI sounds). **`data/saves/`** — `rg.dat`, the encrypted player profile (cash, unlocks, achievements, per-pack level progress).
+- **`docks/`** — docs: `changelog.txt`, `readme.txt`, and `parser.md` (the pack/level-script authoring reference — every level-file command plus the tutorial and macro syntax).
 - **`libs/`**, **`releases/`** — binary libs and compiled builds (gitignored; currently empty).
 
 The active engine is the **new NVGT** (not the legacy fork) — location, and where the engine includes resolve from, are in **[[nvgt-engine-location]]**.

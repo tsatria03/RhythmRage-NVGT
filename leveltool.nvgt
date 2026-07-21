@@ -1,3 +1,4 @@
+#include "bgt_compat.nvgt"
 int lang=1;
 bool acopy;
 string running;
@@ -24,32 +25,32 @@ double distance;
 string pack;
 sound music;
 double cpos;
-#include "include/enhanced_menu.bgt"
+#include "includes/enhanced_menu.nvgt"
 string path;
 message_history rd;
 bool installed;
-#include "include/history.bgt"
+#include "includes/history.nvgt"
 void help() {
 if (lang==1) rd.say("press space to play/stop. Press control space to move the cursor to the new position when it is playing");
-if (lang==2) rd.say("pulsa espacio para reproducir o parar. pulsa control espacio mientras se est· reproduciendo para mover el cursor a esa posiciÛn.");
+if (lang==2) rd.say("pulsa espacio para reproducir o parar. pulsa control espacio mientras se est√° reproduciendo para mover el cursor a esa posici√≥n.");
 if (lang==1) rd.say("Press enter to copy the current position to the clipboard. Press A to automatically copy it when you move.");
-if (lang==2) rd.say("pulsa enter para copiar la posiciÛn actual al portapapeles. Pulsa a para copiarla autom·ticamente cuando te muevas");
+if (lang==2) rd.say("pulsa enter para copiar la posici√≥n actual al portapapeles. Pulsa a para copiarla autom√°ticamente cuando te muevas");
 if (lang==1) rd.say("press right and left arrows to move through the file.");
 if (lang==2) rd.say("pulsa las flechas izquierda y derecha para moverte por el archivo.");
 if (lang==1) rd.say("use shift and the left or right arrow to scrub (move faster without letting go of the keys).");
-if (lang==2) rd.say("pulsa shift con las flechas para moverte m·s r·pido sin soltar las flechas.");
+if (lang==2) rd.say("pulsa shift con las flechas para moverte m√°s r√°pido sin soltar las flechas.");
 if (lang==1) rd.say("press numbers 1 through 0 to change time and bpm intervals that the arrows and page up and down keys move.");
-if (lang==2) rd.say("para cambiar el intervalo de movimiento de las flechas o las teclas avanzar y retroceder p·gina, pulsa los n˙meros del 1 al 0.");
+if (lang==2) rd.say("para cambiar el intervalo de movimiento de las flechas o las teclas avanzar y retroceder p√°gina, pulsa los n√∫meros del 1 al 0.");
 if (lang==1) rd.say("press s to set the start of the song for the bpm marks, meaning that anything before that start will be ignored. To go to songstart, press shift s");
-if (lang==2) rd.say("pulsa s para indicar que la posiciÛn actual es el inicio de la canciÛn para las marcas del cronÛmetro (bpm). Lo anterior a esta marca no contar· como parte de la canciÛn. Para ir directo a la marca de inicio pulsa shift s.");
+if (lang==2) rd.say("pulsa s para indicar que la posici√≥n actual es el inicio de la canci√≥n para las marcas del cron√≥metro (bpm). Lo anterior a esta marca no contar√° como parte de la canci√≥n. Para ir directo a la marca de inicio pulsa shift s.");
 if (lang==1) rd.say("press b to set the bpm and put a mark in the current position");
-if (lang==2) rd.say("pulsa la b para poner una marca de cronÛmetro en la posiciÛn actual.");
+if (lang==2) rd.say("pulsa la b para poner una marca de cron√≥metro en la posici√≥n actual.");
 if (lang==1) rd.say("press page up and page down to move through the file in bpm intervals.");
-if (lang==2) rd.say("pulsa p·gina anterior y p·gina siguiente para moverte por el archivo en intervalos del cronÛmetro.");
+if (lang==2) rd.say("pulsa p√°gina anterior y p√°gina siguiente para moverte por el archivo en intervalos del cron√≥metro.");
 if (lang==1) rd.say("press home to go to the beginning of the file (ignoring songstart) and end to go to the end.");
 if (lang==2) rd.say("pulsa la tecla inicio para ir al principio del archivo (sin tener en cuenta la marca de inicio) y fin para ir al final.");
 if (lang==1) rd.say("press r and type the name of the level without extension to run it via the command line.");
-if (lang==2) rd.say("Pulsa la r y escribe el nombre del nivel sin la extensiÛn para ejecutarlo vÌa la lÌnea de comandos.");
+if (lang==2) rd.say("Pulsa la r y escribe el nombre del nivel sin la extensi√≥n para ejecutarlo v√≠a la l√≠nea de comandos.");
 if (lang==1) rd.say("Press q to quit and save all data.");
 if (lang==2) rd.say("pulsa la q para salir y guardar.");
 }
@@ -59,39 +60,48 @@ if (lang==2) alert("error",l2);
 if (exiting) exit();
 }
 void main() {
-if (!file_exists("z.iss")) path="packs";
-if (file_exists("z.iss")) path=DIRECTORY_APPDATA+"/Oriol GÛmez/rg/packs";
-string[] folders=find_directories(path+"/*");
-if (folders.length()<=0) {
-if (lang==1) alert("error","no packs were detected in the packs folder.");
-if (lang==2) alert("error","no se han detectado paquetes en la carpeta packs.");
-exit();
-}
-else if (folders.length()>1) {
-error("more than one pack was detected. You can only work on one pack at a time.","se ha detectado m·s de un paquete. solo puedes trabajar en un paquete a la vez.");
-}
-
-pm.set_callback(letters,"");
-pm.set_speech_mode(rd.reader_mode);
-pack=path+"/"+folders[0]+"/";
-files=find_files(pack+"*.ogg");
+if (!file_exists("z.iss")) path="mypacks";
+if (file_exists("z.iss")) path=DIRECTORY_APPDATA+"/Oriol Gomez/rg/packs";
 if (lang==1) show_game_window("level tool");
 if (lang==2) show_game_window("herramienta del creador");
 wait(500);
+string[] folders=find_directories(path+"/*");
+if (folders.length()<=0) {
+if (lang==1) alert("error","no pack folders were detected in the mypacks folder.");
+if (lang==2) alert("error","no se han detectado paquetes en la carpeta mypacks.");
+exit();
+}
+//let the user choose which pack folder to work on
+enhanced_menu packmenu;
+packmenu.set_speech_mode(rd.reader_mode);
+packmenu.ats("exit","salir","esc");
+for (uint i=0;i<folders.length();i++) {
+packmenu.ats(folders[i],folders[i],folders[i]);
+}
+string chosen;
+if (lang==1) chosen=packmenu.run_extended("Choose which pack you want to work on. Use the arrow keys and press enter.",true,folders[0],true);
+if (lang==2) chosen=packmenu.run_extended("Elige el paquete en el que quieres trabajar. Usa las flechas y pulsa enter.",true,folders[0],true);
+if (chosen=="esc") exit();
+pack=path+"/"+chosen+"/";
+pm.set_callback(letters,"");
+pm.set_speech_mode(rd.reader_mode);
+files=find_files(pack+"*.ogg");
 
 pm.ats("exit","salir","esc");
 for (uint i=0;i<files.length();i++) {
 pm.ats(files[i],files[i],files[i]);
 }
 string o;
-if (lang==1) o=pm.run_extended("you are in the folder "+pack+". select a file or press its first letter or number",true,"esc",true);
-if (lang==2) o=pm.run_extended("est·s en la carpeta "+pack+". selecciona un archivo, o pulsa la primera letra o n˙mero.",true,"esc",true);
+string startitem="esc";
+if (files.length()>0) startitem=files[0];
+if (lang==1) o=pm.run_extended("you are in the folder "+pack+". select a file or press its first letter or number",true,startitem,true);
+if (lang==2) o=pm.run_extended("est√°s en la carpeta "+pack+". selecciona un archivo, o pulsa la primera letra o n√∫mero.",true,startitem,true);
 if (o=="esc") {
 exit();
 }
 else {
 music.load(pack+o);
-suc=filer.open(pack+o+".ltp","r");
+suc=filer.open(pack+o+".ltp","rb");
 cpos=0;
 if (suc) {
 saved=filer.read();
@@ -108,7 +118,7 @@ bpmmark b;
 b.pos=string_to_number(bd[1]);
 b.bpm=string_to_number(bd[0]);
 for (uint i=0;i<bpmmarks.length();i++) {
-if (bpmmarks[i].pos==bd[1]) {
+if (bpmmarks[i].pos==string_to_number(bd[1])) {
 bpmmarks.remove_at(i);
 break;
 }
@@ -130,9 +140,9 @@ if (savedposition!=0) {
 rd.say("saved data restored");
 cpos=savedposition;
 }
-suc=filer.open(pack+o+".ltp","w");
+suc=filer.open(pack+o+".ltp","wb");
 if (!suc) error("can't open save file for writing","no se pudo abrir el archivo de posiciones para guardar.");
-if (lang==1) 
+if (lang==1)
 rd.say("loaded.");
 if (lang==2)
 rd.say("cargado");
@@ -143,7 +153,7 @@ rd.say("el archivo dura "+music.length+" ms;");
 if (lang==1)
 rd.say("cursor at "+cpos+" ms.");
 if (lang==2)
-rd.say("cursor est· en "+cpos+" ms.");
+rd.say("cursor est√° en "+cpos+" ms.");
 if (lang==1) rd.say("press h for keyboard shortcuts and q to quit the program and save.");
 if (lang==2) rd.say("Pulsa la h para ayuda y la q para guardar y salir.");
 }
@@ -151,21 +161,23 @@ while (true) {
 if (key_pressed(KEY_A)) {
 if (!acopy) {
 acopy=true;
-if (lang==2) rd.say("autocopiar posiciÛn activado");
+if (lang==2) rd.say("autocopiar posici√≥n activado");
 if (lang==1) rd.say("auto copy position on.");
 }
 else if (acopy) {
 acopy=false;
-if (lang==2) rd.say("autocopiar posiciÛn desactivado.");
+if (lang==2) rd.say("autocopiar posici√≥n desactivado.");
 if (lang==1) rd.say("auto copy position off.");
 }
 
 }
 if (key_pressed(KEY_R)) {
 if (lang==1) running=input_box("run "+running,"Enter the name of the level you wish to run, without the .lvl extension:",running);
-if (lang==2) running=input_box("ejecutar "+running,"Introduce el nombre del nivel a ejecutar, sin la extensiÛn lvl:",running);
+if (lang==2) running=input_box("ejecutar "+running,"Introduce el nombre del nivel a ejecutar, sin la extensi√≥n lvl:",running);
 if (running!="") {
-bool suc=run("game.exe",running+".lvl",false,false);
+string target="game.exe";
+if (!SCRIPT_COMPILED) target="game.nvgt";
+bool suc=run(target,running+".lvl",false,false);
 if (!suc) error("I couldn't run your level","No se pudo ejecutar el nivel.",false);
 }
 }
@@ -234,7 +246,7 @@ for (uint i=0;i<bpmmarks.length();i++) {
 bpmmarks[i].save();
 }
 if (ok<1) {
-error("can't save position","no se pudo guardar la posiciÛn.");
+error("can't save position","no se pudo guardar la posici√≥n.");
 }
 break;
 }
@@ -505,7 +517,7 @@ string letters(enhanced_menu@ menu, string data) {
 string chars=string_to_lower_case(get_characters());
 if (chars.length()==1) {
 for (uint i=0;i<files.length();i++) {
-if (string_to_lower_case(files[i][0])==string_to_lower_case(chars[0])) {
+if (string_to_lower_case(string_left(files[i],1))==string_to_lower_case(string_left(chars,1))) {
 rd.say(files[i]);
 menu.menu_position_y=menu.get_item_index(files[i])[1];
 return "";
