@@ -1,9 +1,11 @@
 ####These are the things that need to be finished for future versions of the game.
 
-**Unfinished.  Show the level name next to the locked status wen viewing levels in the level select menu.
-**Unfinished.  Add the ability to turn down the pack music with page up and down when playing a level.
+****Unfinished.  Fix the interactive tutorials not working propperly.
+****Unfinished.  Show the level name next to the locked status wen viewing levels in the level select menu.
+****Unfinished.  Add the ability to turn down the pack music with page up and down when playing a level.
 
 ##These are the things that are already finished from earlier versions of the game.
 
+**Finished.  Fix the store so you can buy actual packs with credits.
 **Finished. Fix the pack loader to accept testible packs that you can play without buying them.
 **Finished. Convert this entire game into nvgt.

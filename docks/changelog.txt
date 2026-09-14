@@ -1,10 +1,12 @@
 ﻿New in 1.0.
+Locked levels in the level select menu now announce the level's name along with the locked status.
+Your saved progress is now stored in your app data folder, under Oriol Gomez, rg, saves.
 The store now charges 1000 credits per pack, and you need at least that much to shop.
 Fixed a scoring problem where releasing a tap and hold note slightly late could still count as a good release instead of a mistake.
 The level tool now lists all the pack folders in your mypacks folder and lets you pick which one to work on. To test a level from a pack, copy that pack into the packs folder first.
 Added a level tool for pack creators, a separate program that plays a sound file and helps you find the exact millisecond positions and BPM marks you need when timing a level's sounds and actions.
 Fixed loose pack testing: dropping a pack folder into the packs folder again builds it and loads you straight into it in creator/test mode with all levels unlocked, without saving progress or achievements to your profile, and rebuilds it every launch so your edits show up right away.
-Converted the game to NVGT.
+Converted the entire game to NVGT.
 Added keys abcdefghijklmnopqrstuvwxyz1234567890 for actions!
 The q key doesn't quit anymore because its a possible action, instead you should use escape now.
 The reaction time can now be modified from within the level by saying misc reaction=value. default is 150, 75 too early and 75 late.
