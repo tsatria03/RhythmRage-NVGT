@@ -44,6 +44,7 @@ int curlev;
 bool perfect=true;
 dictionary unlockinfo;
 string[] unlocked;
+string[] lockedlevels;
 int[] akeys={KEY_RETURN,KEY_SPACE,KEY_UP,KEY_DOWN,KEY_RIGHT,KEY_LEFT,KEY_1,KEY_2,KEY_3,KEY_4,KEY_5,KEY_6,KEY_7,KEY_8,KEY_9,KEY_0,KEY_A,KEY_B,KEY_C,KEY_D,KEY_E,KEY_F,KEY_G,KEY_H,KEY_I,KEY_J,KEY_K,KEY_L,KEY_M,KEY_N,KEY_O,KEY_P,KEY_Q,KEY_R,KEY_S,KEY_T,KEY_U,KEY_V,KEY_W,KEY_X,KEY_Y,KEY_Z};
 int question_state;
 string olv;
@@ -113,7 +114,12 @@ if (creatingpack) return "";
 string lev;
 if (lmenu.currentItem()!=mp) {
 mp=lmenu.currentItem();
-if (mp!="esc" and mp!="locked123") {
+if (mp!="esc") {
+if (is_in_array(mp,lockedlevels)) {
+if (lang==1) rd.say("locked");
+if (lang==2) rd.say("bloqueado");
+}
+else {
 lev=string_trim_right(mp,4);
 int value=string_to_number(get_level(lev));
 switch(value) {
@@ -147,6 +153,7 @@ if (lang==2) rd.say("perfecto!");
 perfectlevel.stop();
 perfectlevel.play();
 break;
+}
 }
 }
 }
@@ -404,6 +411,7 @@ lmenu.move_path="menu_move";
 lmenu.set_callback(checkmenu, "");
 lmenu.set_speech_mode(rd.reader_mode);
 int levels=0,locked=0;
+lockedlevels.resize(0);
 string levname;
 string lock;
 if (lang==1) lock="locked";
@@ -421,7 +429,8 @@ levels++;
 lmenu.ats(get_line(levfiles[i],0),get_line(levfiles[i],0),levfiles[i]);
 continue;
 }
-lmenu.ats(get_line(levfiles[i],0)+" "+lock,get_line(levfiles[i],0)+" "+lock,"locked123");
+lmenu.ats(get_line(levfiles[i],0),get_line(levfiles[i],0),levfiles[i]);
+lockedlevels.insert_last(levfiles[i]);
 locked++;
 }
 }
@@ -431,7 +440,7 @@ if (lang==2) lock="Debes desbloquear los niveles anteriores para proceder.";
 string o;
 if (lang==1) o=lmenu.run_extended("Level select menu: "+levels+" available levels. "+locked+" are locked.",true,"esc",true);
 if (lang==2) o=lmenu.run_extended("Selecciona un nivel: "+levels+" niveles disponibles, y "+locked+" están bloqueados.",true,"esc",true);
-while (o=="locked123") {
+while (is_in_array(o,lockedlevels)) {
 lockerror.stop();
 lockerror.play();
 o=lmenu.run_extended(lock,true,"esc",false);
@@ -1269,6 +1278,10 @@ tut_mus.seek(tut_start);
 first_iter=true;
 tut_mus.play_looped();
 while(true) {
+// NVGT needs a short yield each iteration so it can pump window/input events.
+// Without it this busy loop never sees key presses, so interactive tutorials
+// (which worked in BGT's busy loop) fail to register any input at all.
+wait(5);
 if (key_pressed(KEY_ESCAPE)) {
 tut_mus.stop();
 if (creatingpack) exit();

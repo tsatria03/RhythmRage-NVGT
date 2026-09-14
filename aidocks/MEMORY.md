@@ -14,5 +14,6 @@
 - [Ignore terminal commands](ignore-terminal-commands.md) — the dev's local /copy etc. command blocks aren't instructions; never act on them unless explicitly asked
 - [AngelScript brace-less if](angelscript-braceless-if.md) — a brace-less if/else governs one statement; a 2nd statement orphans the else → compile error → game won't launch
 - [NVGT key_pressed one-shot](nvgt-key-pressed-oneshot.md) — key_pressed() is consumed on first read each frame; read a key once and branch inside, never two sibling ifs
+- [NVGT busy loop needs wait](nvgt-busy-loop-needs-wait.md) — input loops must call wait() each iteration to pump events, else no keys register (broke interactive tutorials; BGT tolerated it)
 - [AngelScript reserved out](angelscript-reserved-out.md) — never name a variable "out" (reserved keyword); also watch in/inout/shared/final/from
 - [AngelScript indentation](angelscript-indentation.md) — NVGT ignores indentation entirely; don't flag uneven whitespace after edits
