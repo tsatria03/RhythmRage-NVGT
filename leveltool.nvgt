@@ -175,9 +175,9 @@ if (key_pressed(KEY_R)) {
 if (lang==1) running=input_box("run "+running,"Enter the name of the level you wish to run, without the .lvl extension:",running);
 if (lang==2) running=input_box("ejecutar "+running,"Introduce el nombre del nivel a ejecutar, sin la extensión lvl:",running);
 if (running!="") {
-string target="game.exe";
-if (!SCRIPT_COMPILED) target="game.nvgt";
-bool suc=run(target,running+".lvl",false,false);
+bool suc=false;
+if (SCRIPT_COMPILED) suc=run("game.exe",running+".lvl",false,false);
+else suc=run(SCRIPT_EXECUTABLE,"game.nvgt "+running+".lvl",false,false);
 if (!suc) error("I couldn't run your level","No se pudo ejecutar el nivel.",false);
 }
 }

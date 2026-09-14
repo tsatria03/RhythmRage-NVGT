@@ -1,3 +1,7 @@
+#pragma asset data
+#pragma asset mypacks
+#pragma asset packs
+#pragma document docks
 #include "bgt_compat.nvgt"
 int lang=1;
 string debugl="";
@@ -520,6 +524,12 @@ ser();
 }
 void store() {
 nopack();
+if (!debug && cash<1000) {
+if (lang==1) rd.add("You don't have enough credits to buy a new pack... You only have "+cash+" and you need at least 1000!",false,true);
+if (lang==2) rd.add("No tienes suficientes créditos para comprar un nuevo paquete, necesitas al menos 1000 y tienes "+cash,false,true);
+start();
+return;
+}
 if (lang==1) rd.say("Use the up and down arrow keys to choose a pack, and enter to select it.");
 if (lang==2) rd.say("Usa las flechas arriba y abajo para escoger un paquete y énter para seleccionarlo.");
 packnames.resize(0);
@@ -533,9 +543,9 @@ packnames.insert_at(0,packfiles[i]);
 }
 }
 if (packnames.length()==0) {
-if (lang==1) rd.add("You've bought all the available packs. Going to downloader...",false,true);
-if (lang==2) rd.add("Ya has comprado todos los packs. Vamos a descargar nuevos...",false,true);
-getpacks();
+if (lang==1) rd.add("You've bought all the available packs.",false,true);
+if (lang==2) rd.add("Ya has comprado todos los packs.",false,true);
+start();
 return;
 }
 else {
@@ -617,6 +627,7 @@ nopack();
 if(key_pressed(KEY_RETURN)) {
 if (mpos>=0) {
 unlocks=unlocks+packnames[mpos]+",";
+if (!debug) lesscash(1000);
 packer.stop();
 packer.stream("buypack");
 packer.play_wait();
@@ -782,7 +793,7 @@ if (lang==1) alert("Warning!","This pack doesn't have a win_pack.ogg file, which
 if (lang==2) alert("Atención!","este pack no tiene el archivo win_pack.ogg, que se usa cuando ganas todos los niveles. Puedes ignorar este mensaje, pero aparecerá cada vez que abras el juego hasta que pongas uno.");
 }
 
-else {
+if (package.file_exists("newach")) {
 achs.load("newach");
 }
 if (played) music.play_looped();
@@ -908,7 +919,7 @@ actions[lastan].efail();
 actions.remove_at(lastan);
 lasta=100000000;
 }
-else if (distance>=timewindow && distance<timewindow/2+10) {
+else if (distance>=timewindow/2) {
 actions[lastan].efail();
 actions.remove_at(lastan);
 lasta=100000000;
@@ -2321,7 +2332,7 @@ if (!file_exists(path+"packs/"+url_decode(results[i])+".pack")) {
 actualpacks.insert_last(url_decode(results[i]));
 }
 else {
-if (file_size(path+"packs/"+url_decode(results[i])+".pack")!=results[i+1]) actualpacks.insert_last(url_decode(results[i]));
+if (file_size(path+"packs/"+url_decode(results[i])+".pack")!=string_to_number(results[i+1])) actualpacks.insert_last(url_decode(results[i]));
 }
 }
 if (actualpacks.length()==0) {

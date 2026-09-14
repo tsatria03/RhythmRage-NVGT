@@ -1,0 +1,18 @@
+- [NVGT engine location](nvgt-engine-location.md) — this game targets the new NVGT (Desktop\nvgt-main), not the legacy engine
+- [BGT-to-NVGT port notes](rhythmrage-bgt-to-nvgt-port.md) — loose-pack testing via generate_packs(), creatingpack mode, folder layout
+- [BGT source has two game files](bgt-source-two-game-files.md) — game.bgt (2023, canonical, port basis, free store) vs z.bgt (2016 backup, legacy paid store); don't confuse them
+- [Commit authorship](commit-authorship.md) — never add Claude as author/co-author on commits
+- [Changelog rules](changelog-rules.md) — docks/changelog.txt: player-facing prose, 1-3 sentence entries, per-version caps (20/.0, 10/minor), reverse-chronological
+- [Confirm before implementing](confirm-before-implementing.md) — treat design discussion as a question; a message ending in ? means respond and wait, don't edit
+- [List modified files](list-modified-files.md) — end every editing turn with a "Files changed:" list, bare filenames only (dev reviews via screen reader)
+- [Ask one question at a time](ask-one-question-at-a-time.md) — when clarifying, surface ONE question per turn and wait; don't batch a numbered list
+- [Check git log for commits](check-git-log-for-commits.md) — the dev commits their own work between turns; check git log/status before asking about commit state
+- [Don't compile yourself](dont-compile-yourself.md) — never run nvgt/nvgt -c; the dev compiles, runs, and verifies builds; just edit and report
+- [No CRLF normalization](no-crlf-normalization.md) — don't run post-edit CRLF normalizer passes; git/.gitattributes handles line endings on commit
+- [Sound placeholders](sound-placeholders.md) — wire up sound playback code referencing the intended name now; dev adds the .ogg later. No dummy files
+- [Quoted text meaning](quoted-text-meaning.md) — quoted text is a reference (said, wanted, or NOT wanted), not literal content to paste
+- [Ignore terminal commands](ignore-terminal-commands.md) — the dev's local /copy etc. command blocks aren't instructions; never act on them unless explicitly asked
+- [AngelScript brace-less if](angelscript-braceless-if.md) — a brace-less if/else governs one statement; a 2nd statement orphans the else → compile error → game won't launch
+- [NVGT key_pressed one-shot](nvgt-key-pressed-oneshot.md) — key_pressed() is consumed on first read each frame; read a key once and branch inside, never two sibling ifs
+- [AngelScript reserved out](angelscript-reserved-out.md) — never name a variable "out" (reserved keyword); also watch in/inout/shared/final/from
+- [AngelScript indentation](angelscript-indentation.md) — NVGT ignores indentation entirely; don't flag uneven whitespace after edits
