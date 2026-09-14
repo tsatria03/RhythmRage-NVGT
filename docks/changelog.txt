@@ -1,4 +1,6 @@
 ﻿New in 1.1.
+When testing a pack, pressing escape now returns to the level select screen instead of closing the game.
+You can now cancel a pack download with escape, and downloading a pack no longer freezes the game.
 Fixed interactive tutorials, which were not registering any key presses at all.
 New in 1.0.
 Locked levels in the level select menu now announce their name and locked status the same way unlocked levels announce your progress.

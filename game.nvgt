@@ -871,8 +871,8 @@ if (keys[0]==KEY_END && creatingpack) {
 rd.say(music.position);
 }
 else if (keys[0]==KEY_ESCAPE) {
-if (creatingpack) exit();
-if (!creatingpack) startgame(1);
+if (creatingpack and com!="") exit();
+else startgame(1);
 }
 if (iskey(keys[0]) && lasta!=100000000 and keys_down().length()==1) {
 if (!cooldown) {
@@ -1284,8 +1284,8 @@ while(true) {
 wait(5);
 if (key_pressed(KEY_ESCAPE)) {
 tut_mus.stop();
-if (creatingpack) exit();
-if (!creatingpack) startgame(1);
+if (creatingpack and com!="") exit();
+else startgame(1);
 }
 if (debug && key_pressed(KEY_Z)) {
 rd.say(intersounds.length());
@@ -2389,6 +2389,9 @@ percent=dl.get_percentage();
 if (key_pressed(KEY_ESCAPE)) {
 dl.abort();;
 }
+// NVGT needs a short yield here so it can pump window/input events; without it
+// Escape never registers to cancel the download and the loop pins a CPU core.
+wait(5);
 }//error
 packing=false;
 wait(5);
