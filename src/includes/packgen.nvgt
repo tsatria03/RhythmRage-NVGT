@@ -1,0 +1,71 @@
+void generate_soundpack() {
+		string[] files=find_files(path+"sounds/*");
+	if (files.length()==0) {
+				}
+	else {
+package.create(path+"sounds"+lang+".pack");
+		for(uint counter=0; counter<files.length(); counter++)
+		{
+			if (string_contains(files[counter],"speaker_",1)!=-1) {
+				string[] speakers=string_split(files[counter],"_",true);
+if (speakers[1]==lang) {
+						package.add_file(path+"sounds/"+files[counter],string_left(files[counter], files[counter].length()-4));
+}
+else {
+}
+}
+else {
+package.add_file(path+"sounds/"+files[counter],string_left(files[counter], files[counter].length()-4));
+}
+}
+}
+}
+void generate_packs() {
+pack_file package;
+string[] packs=find_directories(path+"packs/*");
+if (packs.length()>1) {
+if (lang==1) alert("Multiple packs","There are multiple folders inside the packs folder. You can only work on one pack at a time.");
+if (lang==2) alert("paquetes múltiples", "solo se puede trabajar con un paquete a la vez. Tienes más de una carpeta en la carpeta packs.");
+return;
+}
+if (packs.length()==0) {
+return;
+}
+pack=packs[0];
+package.create(path+"packs/"+packs[0]+".pack");
+creatingpack=true;
+string[] files=find_files(path+"packs/"+packs[0]+"/*");
+if (files.length()==0) {
+if (lang==1) alert("error","error packing the files in your new pack.");
+if (lang==2) alert("error","Hay un error con los archivos de tu nuevo paquete de sonidos.");
+creatingpack=false;
+exit();
+}
+else {
+for(uint counter=0; counter<files.length(); counter++)
+{
+if (string_contains(files[counter],".ogg",1)!=-1) {
+bool encr=file_encrypt(path+"packs/"+packs[0]+"/"+files[counter],"encdata",packs[0]+"guillemandoriolftw");
+if (!encr) {
+alert("encrypt error","error!"+files[counter]);
+pack="default";
+exit();
+return;
+}//encr failed
+bool adding=package.add_file("encdata",string_left(files[counter], files[counter].length()-4));
+if (!adding) {
+alert("error",files[counter]);
+exit();
+}//adding
+}//ogg
+else {
+bool adding=package.add_file(path+"packs/"+packs[0]+"/"+files[counter],files[counter]);
+if (!adding) {
+alert("error",files[counter]);
+exit();
+}
+}
+}
+}
+file_delete("encdata");
+}

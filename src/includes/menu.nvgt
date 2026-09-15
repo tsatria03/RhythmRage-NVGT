@@ -1,0 +1,181 @@
+void start() {
+if (com!="" and creatingpack) {
+startlev(com);
+}
+if (com!="" and !creatingpack) {
+if (lang==1) alert("error","You can only run levels from the command line if you are creating a pack!");
+if (lang==2) alert("vaya","solo puedes ejecutar niveles desde la línea de comandos si estás creando un pack.");
+}
+yespack();
+ser();
+mp=-1;
+vos.stop();
+pool.destroy_all();
+music.stop();
+if (debugl!="") {
+nopack();
+tut_ap.load("tut_good");
+tut_early.load("tut_early");
+tut_late.load("tut_late");
+tut_great.load("tut_bell");
+tut_beep.load("tut_beep");
+yespack();
+tutorial=true;
+startlev(debugl);
+}
+enhanced_menu menu;
+menu.set_callback(menu2,"");
+
+select.load("menu_select");
+music.stop();
+music.stream("menu_music");
+music.volume=-10;
+music.play_looped();
+menu.move_path="menu_move";
+menu.set_speech_mode(rd.reader_mode);
+menu.ats("level select","jugar nivel","s");
+unlocksa=string_split(unlocks,",",true);
+packnames=find_files(path+"packs/*");
+string[] temp;
+for (uint i=0;i<packnames.length();i++) {
+if (is_in_array(packnames[i],unlocksa)) {
+temp.insert_last(packnames[i]);
+}
+else {
+}
+}
+unlocksa=temp;
+checkpack();
+unlocksa=temp;
+if (unlocksa.length()!=1) {
+menu.ats("change pack","cambiar paquete","change");
+}
+menu.ats("store (current credits "+cash+")","tienda (créditos ahora "+cash+")","store");
+menu.ats("download new packs","descargar nuevos packs","getpacks");
+menu.ats("keyboard delay settings for virtual machines (current delay is "+keycal+"ms)","configurar retraso del teclado para máquinas virtuales (retraso actual es de "+keycal+"ms)","calkey");
+menu.ats("achievements","logros","ach");
+menu.ats("delete all achievements","borrar todos tus logros","achclear");
+menu.ats("exit","salir","esc");
+string o;
+if (lang==2) o=menu.run_extended("Bienvenido! Usa las flechas para seleccionar una opción y pulsa énter. Usa las teclas avanzar y retroceder página para cambiar el volumen de la música",true,"esc",true);
+if (lang==1) o=menu.run_extended("Welcome! Use the arrow keys to choose an option, and enter to select it. You can use page up and page down to change the volume of the background music.",true,"esc",true);
+yespack();
+if (o=="ach") {
+select.play();
+fade(music);
+achprizes();
+}
+if (o=="achclear") {
+select.play();
+fade(music);
+achclear();
+}
+
+if (o=="store") {
+select.play();
+fade(music);
+store();
+}
+if (o=="getpacks") {
+select.play();
+fade(music);
+getpacks();
+}
+
+if (o=="calkey") {
+select.play();
+fade(music);
+calibrate_keyboard();
+}
+
+if (o=="change") {
+select.play();
+fade(music);
+packchange();
+}
+if (o=="esc") {
+select.play();
+fade(music);
+int donation=random(1,7);
+if (donation==7 and SCRIPT_COMPILED) {
+if (lang==1) alert("Hello!","If you enjoy this game, please do consider making a donation at http://www.oriolgomez.com and/or subscribing to our mailing list at: oriolgomez+subscribe@groups.io. Your contributions and/or encouragement messages are greatly appreciated! As a donator, you will receive the rhythm rage extra content package which includes the perfect versions for all songs and the original music without sounds.");
+if (lang==2) alert("hola!","Si te gusta este juego, por favor considera hacer una pequeña donación a http://www.oriolgomez.com y/o suscríbete a nuestra lista de correo, radiolavila+subscribe@groups.io. Tus contribuciones y/o mensajes de apoyo son de mucho agrado! Si haces una donación, recibirás como extra el paquete de contenidos extra que incluye todas las versiones de las músicas del juego en perfecto así como la música original.");
+}
+exit();
+return;
+}
+if (o=="s") {
+select.play();
+fade(music);
+startgame(1);
+return;
+}
+}
+void startgame(int md) {
+perfectrun=false;
+musiconly=false;
+question_state=2;
+if (md==1) {
+music.stream("select_level_music");
+music.volume=-12;
+music.play_looped();
+}
+flist=package.list_files();
+string[] levfiles;
+last=false;
+okval=0;
+for (uint i=0;i<flist.length();i++) {
+if (string_right(flist[i],4)==".lvl") levfiles.insert_last(flist[i]);
+}
+levfiles.sort_ascending();
+enhanced_menu lmenu;
+lmenu.move_path="menu_move";
+lmenu.set_callback(checkmenu, "");
+lmenu.set_speech_mode(rd.reader_mode);
+int levels=0,locked=0;
+lockedlevels.resize(0);
+string levname;
+string lock;
+if (lang==1) lock="locked";
+if (lang==2) lock="bloqueado";
+for (uint i=0;i<levfiles.length();i++) {
+levname=string_trim_right(levfiles[i],4);
+//lockcheck
+if (get_level(levname)>1 or i==0 or creatingpack) {
+levels++;
+lmenu.ats(get_line(levfiles[i],0),get_line(levfiles[i],0),levfiles[i]);
+}
+else {
+if (get_level(string_trim_right(levfiles[i-1],4))>1) {
+levels++;
+lmenu.ats(get_line(levfiles[i],0),get_line(levfiles[i],0),levfiles[i]);
+continue;
+}
+lmenu.ats(get_line(levfiles[i],0),get_line(levfiles[i],0),levfiles[i]);
+lockedlevels.insert_last(levfiles[i]);
+locked++;
+}
+}
+lmenu.ats("go back","volver","esc");
+if (lang==1) lock="You must unlock the previous levels to proceed.";
+if (lang==2) lock="Debes desbloquear los niveles anteriores para proceder.";
+string o;
+if (lang==1) o=lmenu.run_extended("Level select menu: "+levels+" available levels. "+locked+" are locked.",true,"esc",true);
+if (lang==2) o=lmenu.run_extended("Selecciona un nivel: "+levels+" niveles disponibles, y "+locked+" están bloqueados.",true,"esc",true);
+while (is_in_array(o,lockedlevels)) {
+lockerror.stop();
+lockerror.play();
+o=lmenu.run_extended(lock,true,"esc",false);
+wait(5);
+}
+if (o=="esc") {
+select.play();
+//fade(music);
+start();
+return;
+}
+else {
+if (levfiles[levfiles.length()-1]==o) last=true;
+startlev(o);
+}
+}
