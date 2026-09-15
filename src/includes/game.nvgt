@@ -6,6 +6,8 @@ return;
 dictionary data;
 data.set("cash",cash);
 data.set("lang",lang);
+data.set("keycal",keycal);
+data.set("menuvol",menuvol);
 data.set("unlocks",unlocks);
 data.set("pack",pack);
 //save unlocks here
@@ -52,6 +54,10 @@ if (data.exists("cash"))
 data.get("cash",cash);
 if (data.exists("lang"))
 data.get("lang",lang);
+if (data.exists("keycal"))
+data.get("keycal",keycal);
+if (data.exists("menuvol"))
+data.get("menuvol",menuvol);
 if (data.exists("unlocks")) 
 data.get("unlocks",unlocks);
 if (unlocks=="") unlocks+="default.pack,";

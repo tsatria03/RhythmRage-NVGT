@@ -29,7 +29,7 @@ menu.set_callback(menu2,"");
 select.load("menu_select");
 music.stop();
 music.stream("menu_music");
-music.volume=-10;
+music.volume=menuvol;
 music.play_looped();
 menu.move_path="menu_move";
 menu.set_speech_mode(rd.reader_mode);
