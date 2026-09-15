@@ -4,6 +4,10 @@ New File*.txt
 # Compiled release builds
 releases/
 
+# Intermediate compile output: the bundle nvgt -c produces in src/ before tools.py moves it into releases/
+src/rg/
+src/rg.app/
+
 # Binary engine libraries (DLLs + bundled tools.
 rg/lib/
 

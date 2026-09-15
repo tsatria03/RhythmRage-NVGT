@@ -12,28 +12,29 @@ It is **single-player and offline** (aside from an optional pack downloader). Th
 
 ## Layout
 
-- **`rg.nvgt`** (formerly `game.nvgt`; compiles to `rg.exe`) — the entire game (~2400 lines): `main()`, menus, the pack builders, the level-script parser (`startlev`/`loadlev`), and the rhythm game loop.
-- **`includes/`** — local includes pulled in by `rg.nvgt`: `classes.nvgt` (the `action`/`snd`/`intersound` gameplay classes), `history.nvgt`, `downloader.nvgt`, `utils.nvgt` (`nopack`/`yespack`/`playintro`/`fade`…), `number_speaker.nvgt`, `enhanced_menu.nvgt`, `reader.nvgt`. Two more includes are bare (`bgt_compat.nvgt`, `sound_pool.nvgt`) — those resolve from the **engine's** include path, not this repo.
-- **`lt.nvgt`** (formerly `leveltool.nvgt`; compiles to `lt.exe`, config `lt.properties`) — a standalone authoring companion (a separate program, NOT part of the game): navigate a pack's `.ogg`, find millisecond positions and BPM marks for timing a level script, and copy them to the clipboard. Scans `mypacks/` for loose (unpacked) source folders and lets you pick which one to work on (copy that pack into `packs/` to test a level with the `r` key); reuses `includes/enhanced_menu.nvgt` + `includes/history.nvgt`. Its `r` (run) key launches `rg.exe` when compiled, else runs `rg.nvgt` through the NVGT runtime (`SCRIPT_EXECUTABLE`). Level-script command reference: `docks/parser.md`.
-- **`packs/`** — the built, encrypted `.pack` files (decryption key is `<packname>guillemandoriolftw`). Each pack holds a pack's levels (`.lvl`), tutorials (`.tut`), and `.ogg` sounds.
-- **`mypacks/`** — loose source folders for pack authors; the **level tool reads this** (its pack picker). The main game never reads it — copy a folder into `packs/` to build/test that pack in the game.
-- **`data/assets/`** — the built engine sound packs `sounds<lang>.pack` (voice/UI sounds). **`data/saves/`** — `rg.dat`, the encrypted player profile (cash, unlocks, achievements, per-pack level progress).
-- **`docks/`** — docs: `changelog.txt`, `readme.txt`, and `parser.md` (the pack/level-script authoring reference — every level-file command plus the tutorial and macro syntax).
-- **`libs/`**, **`releases/`** — binary libs and compiled builds (gitignored; currently empty).
+The repo splits **source** from the **game data / run folder** (post-reorg):
 
-The active engine is the **new NVGT** (not the legacy fork) — location, and where the engine includes resolve from, are in **[[nvgt-engine-location]]**.
+- **`src/`** — all `.nvgt` source: **`rg.nvgt`** (formerly `game.nvgt`) — the entire game (~2400 lines: `main()`, menus, pack builders, the `startlev`/`loadlev` level-script parser, the rhythm loop; compiles to `rg.exe`); **`lt.nvgt`** + `lt.properties` (the standalone level tool, formerly `leveltool.nvgt`; → `lt.exe`); and **`includes/`** (`classes.nvgt` = the `action`/`snd`/`intersound` classes, `history.nvgt`, `downloader.nvgt`, `utils.nvgt` = `nopack`/`yespack`/`playintro`/`fade`…, `number_speaker.nvgt`, `enhanced_menu.nvgt`, `reader.nvgt`). Two bare includes (`bgt_compat.nvgt`, `sound_pool.nvgt`) resolve from the **engine's** include path, not this repo.
+- **`rg/`** — the game's data/run folder (ships alongside the compiled exe): `packs/` (built encrypted `.pack` content — levels `.lvl`, tutorials `.tut`, `.ogg`; decryption key `<packname>guillemandoriolftw`), `mypacks/` (loose author sources — the **level tool** reads these, the game never does), `sounds/` (raw source for building the sound packs), `sounds1.pack`/`sounds2.pack` (built voice/UI sound packs, one per language), `docks/`, `parser.md` (level-script authoring reference), and the Python launchers `rg.py`/`lt.py`. No `lib/` — the compiler supplies the platform libraries (**[[nvgt-090-miniaudio-not-bass]]**).
+- **`build/`** — `tools.py`/`tools.bat`/`tools.ini`: a menu with git helpers plus **Compile** and **Package** for Windows + Mac.
+- **`releases/`** — gitignored build output: `windows/RhythmRage_windows/rg/` (game + `lt.exe` + empty `mypacks/`), `mac/RhythmRage_mac/rg.app`, and `archives/*.zip`.
+- **`aidocks/`** — these memory files. **`docks/`** (repo root) — player-facing docs (`changelog.txt`, `readme.txt`).
+
+The level tool (`lt.nvgt`) is a **separate authoring program, NOT part of the game**: it plays a pack's `.ogg` and finds millisecond/BPM marks for timing a level script, scanning `mypacks/` for source folders; its `r` key launches the game. It ships **Windows-only**.
+
+Running from source, the compiled layout, and the compile/package pipeline → **[[rhythmrage-run-and-build]]**. The save file is `%APPDATA%\Oriol Gomez\rg\saves\rg.dat`. Active engine + runtime → **[[nvgt-engine-location]]** (the new NVGT, not the legacy fork).
 
 ## How it works (the big picture)
 
-- **Pack system.** All playable content lives in encrypted `.pack` files. `main()` opens `packs/<pack>.pack` (default `default`). A **loose folder** dropped in `packs/` is built by `generate_packs()` and launches you into it in creator/test mode (all levels unlocked, progress not saved) — this is the BGT-faithful authoring flow; see **[[rhythmrage-bgt-to-nvgt-port]]**.
-- **Sound storage switching.** `set_sound_storage` is flipped between two packs constantly: **`nopack()`** points at the engine sound pack (`data/assets/sounds<lang>.pack`) for built-in voice/UI sounds; **`yespack()`** points back at the current game pack (and sets its decryption key). Always restore with `yespack()` after a `nopack()` block.
+- **Pack system.** All playable content lives in encrypted `.pack` files under `rg/packs/` (paths built from the `path` prefix — `path+"packs/…"`). `main()` opens the current `.pack` (default `default`). A **loose folder** dropped in `packs/` is built by `generate_packs()` and launches you into it in creator/test mode (all levels unlocked, progress not saved) — this is the BGT-faithful authoring flow; see **[[rhythmrage-bgt-to-nvgt-port]]**.
+- **Sound storage switching.** `set_sound_storage` is flipped between two packs constantly: **`nopack()`** points at the built-in voice/UI sound pack (`path+"sounds<lang>.pack"`, i.e. `rg/sounds<lang>.pack`); **`yespack()`** points back at the current game pack (and sets its decryption key). Always restore with `yespack()` after a `nopack()` block.
 - **Level-script parser.** `startlev()`/`loadlev()` read a `.lvl` (or `.tut`) text file line by line into `action`/`snd`/`intersound` objects, then the game loop in `loadlev()` matches key presses against each action's timed window. Level-script commands: `action`, `play`, `music`, `misc`, `intersound`, macros (`!`/`@`), and tutorial-only commands (`text`, `say`, `interactive`, …). The parser runs twice (macros expand on the first pass).
-- **Save/scoring.** `ser()`/`deser()` read and write the encrypted `data/saves/rg.dat` dictionary. `ser()` **early-returns while `creatingpack` is true**, which is why testing a loose pack never touches the real profile.
+- **Save/scoring.** `ser()`/`deser()` read and write the encrypted player profile at `%APPDATA%\Oriol Gomez\rg\saves\rg.dat` (an always-absolute path). `ser()` **early-returns while `creatingpack` is true**, which is why testing a loose pack never touches the real profile.
 
 ## Where the detail lives (read before working in an area)
 
-- **Engine, running & building** → **[[nvgt-engine-location]]**. Never compile/run the game yourself — the dev does that: **[[dont-compile-yourself]]**.
-- **The BGT→NVGT port, pack testing, and folder moves** (loose-pack `generate_packs()` flow, `nopack`/`yespack`, why saves are safe in test mode, the `data/assets` + `data/saves` relocation) → **[[rhythmrage-bgt-to-nvgt-port]]**.
+- **Engine & runtime location** → **[[nvgt-engine-location]]** (the miniaudio NVGT at `C:\nvgt2\nvgt2.exe`). **Running from source & the build/package pipeline** → **[[rhythmrage-run-and-build]]**. Never compile/run the game yourself — the dev does that: **[[dont-compile-yourself]]**.
+- **The BGT→NVGT port & pack testing** (loose-pack `generate_packs()` flow, `nopack`/`yespack`, why saves are safe in test mode, sound-pack + save relocation) → **[[rhythmrage-bgt-to-nvgt-port]]**. Compiled libs / miniaudio → **[[nvgt-090-miniaudio-not-bass]]**.
 - **Committing** — the repo is `github.com/tsatria03/RhythmRage-NVGT`; the dev commits their own work between turns (**[[check-git-log-for-commits]]**), and commits must never list Claude as author/co-author (**[[commit-authorship]]**).
 
 ## Conventions kept in memory (follow them)
