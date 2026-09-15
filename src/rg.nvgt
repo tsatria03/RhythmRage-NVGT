@@ -537,8 +537,8 @@ if (lang==2) rd.add("No tienes suficientes créditos para comprar un nuevo paque
 start();
 return;
 }
-if (lang==1) rd.say("Use the up and down arrow keys to choose a pack, and enter to select it.");
-if (lang==2) rd.say("Usa las flechas arriba y abajo para escoger un paquete y énter para seleccionarlo.");
+if (lang==1) rd.say("Use the arrow keys to choose a pack, and enter to select it.");
+if (lang==2) rd.say("Usa las flechas para escoger un paquete y énter para seleccionarlo.");
 packnames.resize(0);
 packfiles.resize(0);
 packing=true;
@@ -564,8 +564,8 @@ packloop();
 }//function
 void packchange() {
 nopack();
-if (lang==1) rd.say("Use the up and down arrow keys to choose a pack, and enter to select it.");
-if (lang==2) rd.say("Usa las flechas arriba y abajo para escoger un paquete y énter para seleccionarlo.");
+if (lang==1) rd.say("Use the arrow keys to choose a pack, and enter to select it.");
+if (lang==2) rd.say("Usa las flechas para escoger un paquete y énter para seleccionarlo.");
 packing=true;
 unlocksa=string_split(unlocks,",",true);
 packnames=find_files(path+"packs/*");
@@ -601,7 +601,7 @@ return;
 if (key_down(KEY_M)) {
 rd.say(cash);
 }
-if(key_pressed(KEY_DOWN)) {
+if(key_repeating(KEY_DOWN) or key_repeating(KEY_RIGHT)) {
 mpos+=1;
 if(mpos>=packnames.length()) {
 mpos=0;
@@ -616,7 +616,7 @@ packer.play();
 set_sound_decryption_key(pack+"guillemandoriolftw",false);
 nopack();
 }
-if(key_pressed(KEY_UP)) {
+if(key_repeating(KEY_UP) or key_repeating(KEY_LEFT)) {
 mpos-=1;
 if(mpos<0) {
 mpos=packnames.length()-1;
@@ -664,7 +664,7 @@ packloop2();
 wait(5);
 }
 }
-if(key_pressed(KEY_DOWN)) {
+if(key_repeating(KEY_DOWN) or key_repeating(KEY_RIGHT)) {
 mpos+=1;
 if(mpos>=unlocksa.length()) {
 mpos=0;
@@ -680,7 +680,7 @@ set_sound_decryption_key(pack+"guillemandoriolftw",false);
 nopack();
 }
 
-if(key_pressed(KEY_UP)) {
+if(key_repeating(KEY_UP) or key_repeating(KEY_LEFT)) {
 mpos-=1;
 if(mpos<0) {
 mpos=unlocksa.length()-1;
@@ -2352,19 +2352,19 @@ if (lang==2) rd.say("No hay más paquetes para descargar, por qué no creas tú 
 start();
 return;
 }
-if (lang==1) rd.say("Found new packs! Use the up and down arrow to browse, and enter to download. You can cancel with escape.");
+if (lang==1) rd.say("Found new packs! Use the arrow keys to browse, and enter to download. You can cancel with escape.");
 if (lang==2) rd.say("Nuevos packs encontrados! Usa las flechas, y enter para seleccionar uno para su descarga. Con Escape vuelves al menú");
 int pos=-1;
 while (packing) {
 if (key_pressed(KEY_ESCAPE)) {
 packing=false;
 }
-if (key_pressed(KEY_DOWN)) {
+if (key_repeating(KEY_DOWN) or key_repeating(KEY_RIGHT)) {
 pos+=1;
 if (pos>actualpacks.length()-1) pos=0;
 rd.say(url_decode(actualpacks[pos]));
 }
-if (key_pressed(KEY_UP)) {
+if (key_repeating(KEY_UP) or key_repeating(KEY_LEFT)) {
 pos-=1;
 if (pos<0) pos=actualpacks.length()-1;
 rd.say(url_decode(actualpacks[pos]));
