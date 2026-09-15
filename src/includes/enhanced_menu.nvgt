@@ -30,6 +30,8 @@ bool allow_escape;
 bool enable_home_and_end;
 bool wait_for_move_sound;
 bool play_sounds;
+bool enable_first_letter_navigation=true;
+string last_letter_pressed="";
 int max_x=0, max_y=0, max_pan=40;
 string open_path;
 string close_path;
@@ -51,6 +53,34 @@ string firstItem(bool name=true) {
 if(name) return item_list[0][0].name;
 if(!name) return item_list[0][0].option;
 return "";
+}
+// First-letter navigation: jump to the next item in the current column whose spoken label (option) starts with
+// the typed character. Pressing the same letter again cycles to the following match. Returns true if it moved.
+bool find_first_letter()
+{
+string chars=get_characters();
+if(chars=="") return false;
+string letter=chars.substr(0,1).lower();
+int count=item_list[menu_position_x-1].length();
+if(count==0) return false;
+int cur=menu_position_y-1;
+int start;
+if(letter==last_letter_pressed && cur>=0 && cur<count && item_list[menu_position_x-1][cur].is_filename==false && item_list[menu_position_x-1][cur].option.lower().starts_with(letter))
+start=(cur+1)%count;
+else
+start=0;
+last_letter_pressed=letter;
+int index=start;
+do {
+if(item_list[menu_position_x-1][index].active==true && item_list[menu_position_x-1][index].is_filename==false && item_list[menu_position_x-1][index].option.lower().starts_with(letter))
+{
+menu_position_y=index+1;
+speak_item=true;
+return true;
+}
+index=(index+1)%count;
+} while(index!=start);
+return false;
 }
 bool resize(int max_x, int max_y)
 {
@@ -357,6 +387,7 @@ internal_sound.play();
 }
 }
 running=true;
+if(enable_first_letter_navigation) get_characters(); // discard anything typed before the menu opened
 while(true)
 {
 
@@ -488,6 +519,10 @@ if(callback_result!="")
 running=false;
 return callback_result;
 }
+}
+if(enable_first_letter_navigation && is_2d==false)
+{
+if(find_first_letter()) continue;
 }
 
 
