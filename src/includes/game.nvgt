@@ -5,6 +5,7 @@ return;
 //if (!SCRIPT_COMPILED) return;
 dictionary data;
 data.set("cash",cash);
+data.set("lang",lang);
 data.set("unlocks",unlocks);
 data.set("pack",pack);
 //save unlocks here
@@ -49,6 +50,8 @@ if (data.exists("achievements"))
 data.get("achievements",achievements);
 if (data.exists("cash"))
 data.get("cash",cash);
+if (data.exists("lang"))
+data.get("lang",lang);
 if (data.exists("unlocks")) 
 data.get("unlocks",unlocks);
 if (unlocks=="") unlocks+="default.pack,";
@@ -360,7 +363,7 @@ if (lang==1) alert("warning","there is no win_pack sound for beating the last le
 if (lang==2) alert("atención","no hay un archivo win_pack para reproducir cuando se gana el último nivel!");
 }
 
-if (package.file_exists("logo") && SCRIPT_COMPILED and !alreadyplayed) {
+if (package.file_exists("logo") and !alreadyplayed) {
 alreadyplayed=true;
 music.pause();
 playintro("logo",false);

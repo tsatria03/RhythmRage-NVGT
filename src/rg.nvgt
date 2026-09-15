@@ -150,18 +150,27 @@ break;
 }
 return "";
 }
+// All the language-dependent setup, in one place so it can be re-applied at runtime when the language changes.
+void apply_language() {
+if (lang==1) show_game_window("Rhythm Rage ");
+if (lang==2) show_game_window("beatstar plus ");
+sl="speaker_"+lang+"_";
+vo.prepend=sl+"num_";
+vo.include_and=(lang==2);
+vo.append="";
+set_sound_storage(path+"sounds"+lang+".pack");
+lockerror.load("lock_error");
+oklevel.load("oklevel");
+faillevel.load("faillevel");
+newlevel.load("newlevel");
+newlevel.volume=-2;
+superlevel.load("superlevel");
+perfectlevel.load("perfectlevel");
+}
 void main() {
 string[] cml=string_split(com,"\\",true);
 if (cml.length()>0) com=cml[cml.length()-1];
 else com="";
-if (lang==1)
-{
-show_game_window("Rhythm Rage ");
-}
-if (lang==2)
-{
-show_game_window("beatstar plus ");
-}
 perfectjng="perfect_jingle";
 super="super_jingle";
 failjng="fail_jingle";
@@ -177,23 +186,12 @@ if (!installed and !SCRIPT_COMPILED) path="../rg/";
 directory_create(path+"packs");
 directory_create(DIRECTORY_APPDATA+"/Oriol Gomez/rg/saves");
 if (screen_reader_is_running(1)) install_keyhook();
-sl="speaker_"+lang+"_";
-vo.prepend=sl+"num_";
-if (lang==2) vo.include_and=true;
-vo.append="";
-set_sound_storage(path+"sounds"+lang+".pack");
-lockerror.load("lock_error");
-oklevel.load("oklevel");
-faillevel.load("faillevel");
-newlevel.load("newlevel");
-newlevel.volume=-2;
-superlevel.load("superlevel");
-perfectlevel.load("perfectlevel");
+generate_packs();
+deser();          // load the saved profile (including the chosen language) before applying language-dependent setup
+apply_language();
 if (!SCRIPT_COMPILED && com=="") {
 generate_soundpack();
 }
-generate_packs();
-deser();
 if (com=="") playintro("logo"+lang,false);
 yespack();
 package.open(path+"packs/"+pack+".pack");

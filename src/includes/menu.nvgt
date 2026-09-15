@@ -52,6 +52,7 @@ menu.ats("change pack","cambiar paquete","change");
 }
 menu.ats("store (current credits "+cash+")","tienda (créditos ahora "+cash+")","store");
 menu.ats("download new packs","descargar nuevos packs","getpacks");
+menu.ats("change language (current language is "+(lang==1?"English":"Spanish")+")","cambiar idioma (idioma actual: "+(lang==1?"inglés":"español")+")","lang");
 menu.ats("keyboard delay settings for virtual machines (current delay is "+keycal+"ms)","configurar retraso del teclado para máquinas virtuales (retraso actual es de "+keycal+"ms)","calkey");
 menu.ats("achievements","logros","ach");
 menu.ats("delete all achievements","borrar todos tus logros","achclear");
@@ -87,6 +88,11 @@ select.play();
 fade(music);
 calibrate_keyboard();
 }
+if (o=="lang") {
+select.play();
+fade(music);
+change_language();
+}
 
 if (o=="change") {
 select.play();
@@ -110,6 +116,25 @@ fade(music);
 startgame(1);
 return;
 }
+}
+void change_language() {
+enhanced_menu lmenu;
+lmenu.set_speech_mode(rd.reader_mode);
+lmenu.move_path="menu_move";
+lmenu.ats("English","inglés","1");
+lmenu.ats("Spanish","español","2");
+lmenu.ats("go back","volver","esc");
+string o;
+if (lang==1) o=lmenu.run_extended("Choose a language.",true,"esc",true);
+if (lang==2) o=lmenu.run_extended("Escoge un idioma.",true,"esc",true);
+if (o=="esc") {
+start();
+return;
+}
+lang=string_to_number(o);
+apply_language();
+ser();      // persist the choice (no-op while testing a loose pack, like all saves)
+start();
 }
 void startgame(int md) {
 perfectrun=false;
