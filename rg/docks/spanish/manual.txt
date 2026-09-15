@@ -1,0 +1,17 @@
+﻿Beatstar plus!
+
+Bienvenido a beatstar plus. Este manual será corto y simple ya que cada nivel tiene su tutorial, pero aquí tienes lo básico:
+
+Este juego está basado en música y ritmos. El objetivo es seguir lo mejor que puedas las instrucciones que te da cada tutorial.
+Si no sigues bien las instrucciones no desbloquearás el siguiente nivel. Al final de cada nivel se te dirá lo bien que lo hiciste y se desbloqueará el próximo nivel.
+
+La única tecla extra que puedes aprender es la tecla escape. Si estás frustrado y quieres cerrar el juego, pulsa escape y saldrás del juego.
+
+Puedes crear packs para este juego. Para ello, échale un buen vistazo al manual del creador y usa la herramienta del creador, ya que es la mejor forma de obtener los tiempos para las canciones.
+Usa el modo automático (debug mode) para asegurarte de que tienes bien puestos los tiempos antes de subir el paquete al público!
+Para subir un paquete, entra en oriolgomez.com y encuentra el enlace en la sección de juegos. Podrás subirlo en formato .zip.
+Para jugar a packs que hayan creado otros usuarios, descárgalos primero de la página web y, después, ponlos en la carpeta packs accesible mediante el acceso directo en el menú de inicio o, si estás jugando a la versión portable, dentro de la carpeta packs del juego.
+
+Espero que disfrutes del juego y, si es así, por favor haz una pequeña contribución. ¡Ayuda mucho!
+
+Un agradecimiento especial a Guillem León por los niveles que ha hecho (el fontanero, la memoria de jago y ritmos locos 1) así como la música chiptune de uno de los primeros niveles (ya sabrás cuál es).

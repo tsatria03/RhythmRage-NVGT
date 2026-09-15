@@ -1,0 +1,13 @@
+﻿Changes
+añadidas las teclas abcdefghijklmnopqrstuvwxyz1234567890 como posibles para las acciones!
+la q ya no sale del juego porque es una posible acción, ahora sales con el escape
+el tiempo que tiene el jugador para pulsar acciones en ese nivel se puede cambiar en los niveles con "misc reaction=...". (por defecto son 150 lo que son 75ms demasiado pronto y 75 tarde).
+ahora puedes configurar el retraso del teclado.
+cambiados algunos niveles por otros para que sea más fácil.
+arreglado un error con guardado de datos
+he puesto unas cuantas novedades para el debug mode
+ahora las teclas avanzar y retroceder página suben y bajan volumen de música en menús
+añadido un fail= para los requires
+ahora puedes escuchar cómo sería el nivel hecho perfecto.
+cambiado el menú tutorial
+arreglado un bug muy importante a la hora de guardar archivos
