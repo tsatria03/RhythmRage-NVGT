@@ -1,4 +1,5 @@
 ﻿New in 1.1.
+In the store and change pack menus, the tab key is now used to hear your credits. This moved off the m key so letters can jump to packs by name.
 In a menu, you can now press a letter to jump to the next item that starts with it.
 Menus can now be navigated with the left and right arrow keys as well as up and down.
 When testing a pack, pressing escape now returns to the level select screen instead of closing the game.

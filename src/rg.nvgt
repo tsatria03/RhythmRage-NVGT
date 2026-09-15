@@ -529,6 +529,29 @@ else {
 ser();
 }
 }
+// First-letter search over a list of pack filenames: next entry (cycling from current) starting with letter, else -1.
+int next_first_letter(string[]@ list, int current, string letter) {
+int count=list.length();
+if (count==0) return -1;
+if (current<0) current=count-1;
+for (int i=1;i<=count;i++) {
+int idx=(current+i)%count;
+if (list[idx].lower().starts_with(letter)) return idx;
+}
+return -1;
+}
+// Announce and preview the pack at idx (switch to its encrypted storage, play its name sound, then restore).
+void preview_pack(string[]@ list, int idx) {
+packer.stop();
+set_sound_storage(path+"packs/"+list[idx]);
+rd.say(list[idx]);
+string key=string_replace(list[idx],".pack","",true)+"guillemandoriolftw";
+set_sound_decryption_key(key,false);
+packer.stream("name");
+packer.play();
+set_sound_decryption_key(pack+"guillemandoriolftw",false);
+nopack();
+}
 void store() {
 nopack();
 if (!debug && cash<1000) {
@@ -557,6 +580,7 @@ return;
 }
 else {
 mpos=-1;
+get_characters(); // discard input typed before the browser opened
 while (packing) {
 packloop();
 }//loop
@@ -585,6 +609,7 @@ if (lang==2) rd.add("No hay packs para cambiar!",false,true);
 start();
 return;
 }
+get_characters(); // discard input typed before the browser opened
 while (packing) {
 packloop2();
 }//loop
@@ -598,7 +623,7 @@ packing=false;
 start();
 return;
 }
-if (key_down(KEY_M)) {
+if (key_pressed(KEY_TAB)) {
 rd.say(cash);
 }
 if(key_repeating(KEY_DOWN) or key_repeating(KEY_RIGHT)) {
@@ -631,6 +656,11 @@ packer.play();
 set_sound_decryption_key(pack+"guillemandoriolftw",false);
 nopack();
 }
+string chars=get_characters();
+if (chars!="") {
+int idx=next_first_letter(packnames, mpos, chars.substr(0,1).lower());
+if (idx>=0) { mpos=idx; preview_pack(packnames, mpos); }
+}
 if(key_pressed(KEY_RETURN)) {
 if (mpos>=0) {
 unlocks=unlocks+packnames[mpos]+",";
@@ -656,7 +686,7 @@ packing=false;
 start();
 return;
 }
-if (key_pressed(KEY_M)) {
+if (key_pressed(KEY_TAB)) {
 nopack();
 vo.speak(cash);
 while (vo.speak_next()==1) {
@@ -694,6 +724,11 @@ packer.stream("name");
 packer.play();
 set_sound_decryption_key(pack+"guillemandoriolftw",false);
 nopack();
+}
+string chars=get_characters();
+if (chars!="") {
+int idx=next_first_letter(unlocksa, mpos, chars.substr(0,1).lower());
+if (idx>=0) { mpos=idx; preview_pack(unlocksa, mpos); }
 }
 if(key_pressed(KEY_RETURN)) {
 if (mpos>=0) {
@@ -2355,6 +2390,7 @@ return;
 if (lang==1) rd.say("Found new packs! Use the arrow keys to browse, and enter to download. You can cancel with escape.");
 if (lang==2) rd.say("Nuevos packs encontrados! Usa las flechas, y enter para seleccionar uno para su descarga. Con Escape vuelves al menú");
 int pos=-1;
+get_characters(); // discard input typed before the browser opened
 while (packing) {
 if (key_pressed(KEY_ESCAPE)) {
 packing=false;
@@ -2368,6 +2404,11 @@ if (key_repeating(KEY_UP) or key_repeating(KEY_LEFT)) {
 pos-=1;
 if (pos<0) pos=actualpacks.length()-1;
 rd.say(url_decode(actualpacks[pos]));
+}
+string chars=get_characters();
+if (chars!="") {
+int idx=next_first_letter(actualpacks, pos, chars.substr(0,1).lower());
+if (idx>=0) { pos=idx; rd.say(url_decode(actualpacks[pos])); }
 }
 if (key_pressed(KEY_RETURN)) {
 if (lang==1) rd.say("Please wait while the pack is downloaded.");

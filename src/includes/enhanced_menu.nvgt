@@ -75,7 +75,6 @@ do {
 if(item_list[menu_position_x-1][index].active==true && item_list[menu_position_x-1][index].is_filename==false && item_list[menu_position_x-1][index].option.lower().starts_with(letter))
 {
 menu_position_y=index+1;
-speak_item=true;
 return true;
 }
 index=(index+1)%count;
@@ -522,7 +521,7 @@ return callback_result;
 }
 if(enable_first_letter_navigation && is_2d==false)
 {
-if(find_first_letter()) continue;
+if(find_first_letter()) { speak_item=true; continue; }
 }
 
 
