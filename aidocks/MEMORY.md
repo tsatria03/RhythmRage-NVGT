@@ -1,4 +1,5 @@
 - [NVGT engine location](nvgt-engine-location.md) — this game targets the new NVGT (Desktop\nvgt-main), not the legacy engine
+- [NVGT 0.90 uses miniaudio not BASS](nvgt-090-miniaudio-not-bass.md) — bass*.dll obsolete (compiled in); compiled lib/ needs only phonon + 3 screen-reader clients; distribution doc is outdated
 - [BGT-to-NVGT port notes](rhythmrage-bgt-to-nvgt-port.md) — loose-pack testing via generate_packs(), creatingpack mode, folder layout
 - [BGT source has two game files](bgt-source-two-game-files.md) — game.bgt (2023, canonical, port basis, free store) vs z.bgt (2016 backup, legacy paid store); don't confuse them
 - [Commit authorship](commit-authorship.md) — never add Claude as author/co-author on commits

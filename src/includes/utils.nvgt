@@ -1,0 +1,212 @@
+sound utilsplayer;
+file game_log;
+bool is_in_array(string value,string[]@ arr) {
+for (uint i=0;i<arr.length();i++) {
+if (arr[i]==value) return true;
+}
+return false;
+}
+bool iskey(int value) {
+for (uint i=0;i<akeys.length();i++) {
+if (akeys[i]==value) return true;
+}
+return false;
+}
+
+void play(string filename,bool wait=false) {
+utilsplayer.stop();
+utilsplayer.load(filename);
+if (wait==true) utilsplayer.play_wait();
+if (!wait) utilsplayer.play();
+}
+void morecash(int howmuch) {
+cash+=howmuch;
+ser();
+}
+void lesscash(int howmuch) {
+cash-=howmuch;
+if (cash<0) cash=0;
+ser();
+}
+void customexit() {
+sound exits;
+exits.load("ag_exit");
+exits.play();
+while (exits.playing) {
+if (key_pressed(KEY_RETURN) || key_pressed(KEY_ESCAPE)) {
+exits.stop();
+}
+wait(5);
+}
+exit();
+}
+void fade(sound@ handle) {
+int oldvol=handle.volume;
+while (handle.volume>=oldvol-50) {
+handle.volume=handle.volume-1;
+wait(15);
+}
+}
+void fade2(sound@ handle) {
+int oldvol=handle.volume;
+while (handle.volume>=oldvol-50) {
+handle.volume=handle.volume-1;
+wait(35);
+}
+}
+
+void playintro(string file,bool load=false) {
+if (debugl!="") return;
+sound intro;
+if (load) intro.load(file);
+if (!load) intro.stream(file);
+intro.play();
+while(intro.playing) {
+if(key_pressed(KEY_SPACE)||key_pressed(KEY_RETURN)||key_pressed(KEY_ESCAPE)) {
+intro.stop();
+}
+wait(5);
+}
+}
+class map {
+uint size_x,size_y;
+string[][] tile;
+bool setup(uint size_x,uint size_y,string tilename) {
+if(tilename=="") return false;
+this.size_x=size_x;this.size_y=size_y;
+tile.resize(size_x);
+for(uint x=0;x<size_x;x++) {
+tile[x].resize(size_y);
+for(uint y=0;y<size_y;y++) {
+tile[x][y]=tilename;
+}
+}
+return true;
+}
+bool set_tile(uint min_x,uint max_x,uint min_y,uint max_y,string tilename) {
+if((min_x>=size_x)||(min_y>=size_y)||(max_x>=size_x)||(max_y>=size_y)||(tilename=="")) return false;
+for(uint x=min_x;x<=max_x;x++) {
+for(uint y=min_y;y<=max_y;y++) {
+tile[x][y]=tilename;
+}
+}
+return true;
+}
+}
+/*
+int[] find_new_position() {
+int x;
+int y;
+bool more=true;
+while (more) {
+x=random(5,grid.size_x-5);
+y=random(5,grid.size_y-5);
+if (grid.tile[x][y]!="ground") {
+continue;
+}
+if (totalCones==0) {
+more=false;
+break;
+}
+else {
+for (uint i=0;i<cones.length();i++) {
+if (cones[i] is null) {
+continue;
+}
+if (cones[i].x==x && cones[i].y==y) {
+more=true;
+break;
+}
+else {
+more=false;
+}
+}
+}
+}
+int[] arr(2);
+arr[0]=x;
+arr[1]=y;
+return arr;
+}
+int[] find_new_bomb_position() {
+int x;
+int y;
+bool more=true;
+while (more) {
+x=random(posx-20,posx+20);
+y=random(posy-20,posy+20);
+if (y<0 || x<0) continue;
+if (y>grid.size_y-1 || x>grid.size_x-1) continue;
+if (grid.tile[x][y]!="ground") {
+continue;
+}
+if (totalCones==0) {
+more=false;
+break;
+}
+else {
+for (uint i=0;i<cones.length();i++) {
+if (cones[i] is null) {
+continue;
+}
+if (cones[i].x==x && cones[i].y==y) {
+more=true;
+break;
+}
+else {
+
+more=false;
+}
+}
+}
+}
+int[] arr(2);
+arr[0]=x;
+arr[1]=y;
+return arr;
+}
+*/
+void speak(string what,bool wait=false) {
+vos.stop();
+vos.stream(sl+what);
+vos.volume=vos.volume+2;
+if (!wait) vos.play();
+if (wait) vos.play_wait();
+}
+double percent(double v1,double v2) {
+return floor(v1 / v2 * 100);
+}
+void nopack() {
+set_sound_storage(path+"sounds"+lang+".pack");
+}
+void yespack() {
+set_sound_storage(path+"packs/"+pack+".pack");
+set_sound_decryption_key(pack+"guillemandoriolftw",false);
+package.open(path+"packs/"+pack+".pack");
+}
+string get_line(string filename,int number) {
+datastream@ f;
+@f=package.get_file(filename);
+if (@f==null) return "";
+string contents=f.read();
+string[] lines=string_split(contents,"\r\n",false);
+return lines[number];
+}
+void ragequit() {
+sound rage;
+pool.destroy_all();
+music.stop();
+rage.load("rage"+random(1,8));
+rage.play_wait();
+exit();
+}
+bool check_playing_sounds() {
+for (uint i=0;i<pool.items.length();i++) {
+if (pool.sound_is_playing(i)) return true;
+}
+return false;
+}
+void db(string t,bool quit=false) {
+alert("debug",t);
+if (quit) exit();
+}

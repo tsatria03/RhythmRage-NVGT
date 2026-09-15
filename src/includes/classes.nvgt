@@ -1,0 +1,305 @@
+int lsd;
+int lad;
+class preload
+{
+sound@ handle;
+string name;
+}
+bool preload_add(string filename)
+{
+// Verify that the sound hasn't already been loaded as a preload by comparing the filenames.
+string[] files=string_split(filename,",",true);
+for (uint i=0;i<files.length();i++) {
+for(int u=0;u<preloads.length();u++)
+{
+if(preloads[u].name==files[i])
+return false;
+}
+sound temp;
+temp.load(files[i]);
+if(temp.active==false)
+{
+if (creatingpack) alert("sound preload error!",""+files[i]+" on line "+curline);
+if (creatingpack) exit();
+return false;
+}
+preload loader;
+@loader.handle=temp;
+loader.name=files[i];
+preloads.insert_last(loader);
+return true;
+}
+alert("error","preload error");
+return false;
+}
+// The following function resets all of the preloads.
+void reset_preloads()
+{
+preloads.resize(0);
+// Call the garbage_collect function to ensure that all data is cleaned up immediately.
+// Comment out this call if you don't want this extra delay here.
+garbage_collect();
+}
+class snd {
+string failreq;
+string name;
+int pitch=100;
+int volume=0;
+string ach;
+int pan=100;
+int duration=0;
+string alias;
+snd(string n,int p,int i,int v,int t,string a,string achi) {
+lsd=this.duration;
+this.ach=achi;
+this.name=n;
+this.pan=p;
+this.pitch=i;
+this.alias=a;
+if (alias!="") {
+//alert("sound alias",alias);
+}
+this.volume=v;
+this.duration=t;
+bool ok=preload_add(this.name);
+}
+void play() {
+if (alias!="") {
+string[] aliasa=string_split(alias,",",true);
+string[] keys=aliases.get_keys();
+for (uint i=0;i<keys.length();i++) {
+}
+for (uint i=0;i<aliasa.length();i++) {
+if (!aliases.exists(aliasa[i])) {
+if (failreq!="") {
+string[] files=string_split(failreq,",",true);
+int suc;
+if (files.length()==1) {
+suc=pool.play_stationary_extended(files[0],false,0,this.pan,this.volume,this.pitch,false);
+if (suc==-1) {
+alert("sound error","sound error with "+this.name);
+exit();
+}
+}
+else {
+for (uint i=0;i<files.length();i++) {
+suc=pool.play_stationary_extended(files[i],false,0,this.pan,this.volume,this.pitch,false);
+if (suc==-1) {
+alert("sound error","sound error with "+this.name);
+exit();
+}
+}
+}
+}
+//if (debugmode and !perfectrun) rd.say("alias failed "+aliasa[i]);
+return;
+}
+else {
+aliases.delete(aliasa[i]);
+}
+}
+}
+if (ach!="" && !debugmode) {
+get_ach(ach);
+}
+string[] files=string_split(name,",",true);
+int suc;
+if (files.length()==1) {
+suc=pool.play_stationary_extended(files[0],false,0,this.pan,this.volume,this.pitch,false);
+if (suc==-1) {
+alert("sound error","sound error with "+this.name);
+exit();
+}
+}
+else {
+for (uint i=0;i<files.length();i++) {
+suc=pool.play_stationary_extended(files[i],false,0,this.pan,this.volume,this.pitch,false);
+if (suc==-1) {
+alert("sound error","sound error with "+this.name);
+exit();
+}
+
+}
+}
+
+}
+}
+class action {
+bool played;
+bool released=false;
+bool held;
+bool killperfect;
+string name;
+sound_pool apool(30);
+string alias;
+string bk;
+int pitch=100;
+int volume=0;
+string ach;
+string failsound,earlysound,latesound,efailsound;
+int pan=100;
+int key;
+int type;
+int end;
+int duration=0;
+string endsound;
+action(string n,int p,int i,int v,int t,string f,string e,string l,int k,string a,string bks,string achi,int ty,int eti,string ends,string efa,bool kp) {
+lsd=this.duration;
+if (kp==true) this.killperfect=true;
+this.endsound=ends;
+this.name=n;
+this.efailsound=efa;
+this.type=ty;
+this.end=eti;
+this.ach=achi;
+this.bk=bks;
+this.alias=a;
+if (alias!="") {
+//alert("action alias",alias);
+}
+this.pan=p;
+this.pitch=i;
+this.failsound=f;
+this.earlysound=e;
+this.latesound=l;
+this.volume=v;
+this.key=k;
+this.duration=t;
+preload_add(this.name);
+preload_add(this.failsound);
+preload_add(this.earlysound);
+preload_add(this.latesound);
+if (type==2) preload_add(this.efailsound);
+if (type==2) preload_add(this.endsound);
+preload_add(this.bk);
+}
+void play() {
+this.played=true;
+cooldown=false;cooler.restart();cooler.pause();
+good++;
+held=true;
+if (this.alias!="") {
+aliases.set(alias,"ok");
+//if (debugmode and !perfectrun) rd.say("alias "+alias);
+}
+if (ach!="" && !debugmode) {
+if (type==1) get_ach(ach);
+}
+string[] files=string_split(name,",",true);
+int suc;
+if (files.length()==1) {
+if (type==2) suc=apool.play_stationary_extended(files[0],false,0,this.pan,this.volume,this.pitch,false);
+if (type==1) suc=pool.play_stationary_extended(files[0],false,0,this.pan,this.volume,this.pitch,false);
+if (suc==-1) {
+alert("sound error","sound error with "+this.name);
+exit();
+}
+}
+else {
+for (uint i=0;i<files.length();i++) {
+if (type==2) suc=apool.play_stationary_extended(files[i],false,0,this.pan,this.volume,this.pitch,false);
+if (type==1) suc=pool.play_stationary_extended(files[i],false,0,this.pan,this.volume,this.pitch,false);
+if (suc==-1) {
+alert("sound error","sound error with "+this.name);
+exit();
+}
+}
+}
+}
+void stop() {
+if (debugmode) return;
+apool.destroy_all();
+}
+void release() {
+good++;
+held=false;
+released=true;
+if (type!=2) return;
+this.stop();
+if (this.alias!="") {
+aliases.set(alias,"ok");
+}
+if (ach!="" && !debugmode) {
+get_ach(ach);
+}
+string[] files=string_split(endsound,",",true);
+apool.destroy_all();
+int suc;
+if (files.length()==1) {
+suc=pool.play_stationary_extended(files[0],false,0,this.pan,this.volume,this.pitch,false);
+if (suc==-1) {
+alert("sound error","sound error with "+this.name);
+exit();
+}
+}
+else {
+for (uint i=0;i<files.length();i++) {
+suc=pool.play_stationary_extended(files[i],false,0,this.pan,this.volume,this.pitch,false);
+if (suc==-1) {
+alert("sound error","sound error with "+this.name);
+exit();
+}
+}
+}
+}
+void early() {
+aliases.delete(alias);
+cooldown=true; cooler.restart();
+bad++;
+if (killperfect) perfect=false;
+int suc=pool.play_stationary_extended(earlysound,false,0,this.pan,this.volume,this.pitch,false);
+if (suc==-1) {
+alert("sound error","sound error with "+this.name);
+exit();
+}
+}
+void badkey() {
+cooldown=true; cooler.restart();
+int suc=pool.play_stationary_extended(this.bk,false,0,this.pan,this.volume,this.pitch,false);
+if (suc==-1) {
+alert("sound error","sound error with "+this.name);
+exit();
+}
+}
+void late() {
+cooldown=true; cooler.restart();
+aliases.delete(alias);
+bad++;
+if (killperfect) perfect=false;
+int suc=pool.play_stationary_extended(latesound,false,0,this.pan,this.volume,this.pitch,false);
+if (suc==-1) {
+alert("sound error","sound error with "+this.name);
+exit();
+}
+}
+void fail() {
+cooldown=true; cooler.restart();
+bad++;
+if (killperfect) perfect=false;
+this.stop();
+aliases.delete(alias);
+int suc=pool.play_stationary_extended(failsound,false,0,0,0,100,false);
+if (suc==-1) {
+alert("sound error","sound error with "+this.name);
+exit();
+}
+}
+void efail() {
+bad++;
+if (killperfect) perfect=false;
+aliases.delete(alias);
+this.stop();
+int suc=pool.play_stationary_extended(efailsound,false,0,0,0,100,false);
+if (suc==-1) {
+alert("sound error","sound error with "+this.name);
+exit();
+}
+}
+}
+class intersound {
+int time;
+bool held=false;
+int key;
+int end;
+sound snd;
+}

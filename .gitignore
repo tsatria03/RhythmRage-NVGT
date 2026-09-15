@@ -5,15 +5,11 @@ New File*.txt
 releases/
 
 # Binary engine libraries (DLLs + bundled tools.
-libs/
+rg/lib/
 
 # Binary media assets
 *.pack
-mypacks/
-packs/
-sounds/
-sounds2/
-data/assets/
-
-# Player save data
-data/saves/
+rg/mypacks/
+rg/packs/
+rg/sounds/
+rg/sounds2/

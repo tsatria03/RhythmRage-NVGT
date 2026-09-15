@@ -8,7 +8,7 @@ metadata:
   modified: 2026-07-21T04:50:18.899Z
 ---
 
-Do NOT compile or run the game yourself — don't invoke `nvgt game.nvgt`, `nvgt -c`, or otherwise launch the NVGT compiler/runtime to build or test. Make the code edits and stop; the dev compiles, runs, and verifies on their own machine.
+Do NOT compile or run the game yourself — don't invoke `nvgt rg.nvgt`, `nvgt -c`, or otherwise launch the NVGT compiler/runtime to build or test. Make the code edits and stop; the dev compiles, runs, and verifies on their own machine.
 
 **Why:** the dev prefers to control the build/verify step themselves.
 
