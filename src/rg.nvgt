@@ -1,4 +1,5 @@
 #include "bgt_compat.nvgt"
+#include"instance.nvgt"
 #include "sound_pool.nvgt"
 #include"includes/*.nvgt"
 int lang=1;
@@ -83,6 +84,7 @@ sound stuff;
 int score;
 int cash;
 int level;
+instance gamstance;
 message_history rd;
 bool playing;
 sound music;
@@ -188,6 +190,15 @@ directory_create(DIRECTORY_APPDATA+"/Oriol Gomez/rg/saves");
 if (screen_reader_is_running(1)) install_keyhook();
 generate_packs();
 deser();          // load the saved profile (including the chosen language) before applying language-dependent setup
+// Only one copy of the game may run at a time. gamstance grabbed the named mutex when it was
+// constructed at startup; if another process already holds it, is_already_running is true.
+// Checked after deser() so the message can use the player's saved language.
+if (gamstance.is_already_running) {
+if (lang==1) alert("Rhythm Rage","Rhythm Rage is already running.");
+if (lang==2) alert("beatstar plus","beatstar plus ya se está ejecutando.");
+exit();
+return;
+}
 apply_language();
 if (!SCRIPT_COMPILED && com=="") {
 generate_soundpack();

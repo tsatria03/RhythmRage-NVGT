@@ -4,6 +4,7 @@
 
 ##These are the things that are already finished from earlier versions of the game.
 
+**Finished.  Make it so you can't run the game more than once.
 **Finished.  Fix the interactive tutorials not working propperly.
 **Finished.  Show the level name next to the locked status wen viewing levels in the level select menu.
 **Finished.  Fix the store so you can buy actual packs with credits.

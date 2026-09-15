@@ -1,4 +1,5 @@
 ﻿New in 1.1.
+The game now stops you from opening more than one copy at the same time.
 You can now switch the game's language between English and Spanish from the main menu, and your choice is remembered.
 In the store and change pack menus, the tab key is now used to hear your credits. This moved off the m key so letters can jump to packs by name.
 In a menu, you can now press a letter to jump to the next item that starts with it.
