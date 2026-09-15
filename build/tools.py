@@ -23,9 +23,10 @@ SRC_DIR      = os.path.join(REPO_DIR, "src")    # the .nvgt source lives here
 # --- Compile / package / release ---
 NVGT2     = r"C:\nvgt2\nvgt2.exe"                 # miniaudio NVGT compiler this game uses
 RG_DIR    = os.path.join(REPO_DIR, "rg")          # the game's data folder
-# Copied from rg/ into every build. NOT: mypacks/ (authoring), sounds/ (raw source), *.py launchers, or lib (the
-# bundler already supplies the correct per-platform libraries).
-SHIP      = ["docks", "packs", "parser.md", "sounds1.pack", "sounds2.pack"]
+# Copied from rg/ into every build. docks/ now holds all the player-facing docs (english/ + spanish/ subfolders,
+# including the level-tool parser reference), so copying the folder ships them all. NOT: mypacks/ (authoring),
+# sounds/ (raw source), *.py launchers, or lib (the bundler already supplies the correct per-platform libraries).
+SHIP      = ["docks", "packs", "sounds1.pack", "sounds2.pack"]
 # Destination for each platform: the bundle (named after the script) goes inside the existing RhythmRage_<platform> folder.
 WIN_DEST  = os.path.join(REPO_DIR, "releases", "windows", "RhythmRage_windows", NVGT_OUT)          # ...\rg  (folder: rg.exe + lib + data)
 MAC_DEST  = os.path.join(REPO_DIR, "releases", "mac", "RhythmRage_mac", NVGT_OUT + ".app")         # ...\rg.app
