@@ -515,7 +515,8 @@ running=false;
 return "esc";
 }
 }
-if(key_pressed(KEY_UP))
+// In a single-column (non-2D) menu, Left navigates like Up so either arrow axis works.
+if(key_repeating(KEY_UP) or (is_2d==false and key_repeating(KEY_LEFT)))
 {
 initial=false;
 if(menu_position_y==0 && item_list[menu_position_x-1][max_y-1].active==true)
@@ -567,7 +568,8 @@ bounce_sound.play();
 }
 continue;
 }
-if(key_pressed(KEY_DOWN))
+// In a single-column (non-2D) menu, Right navigates like Down so either arrow axis works.
+if(key_repeating(KEY_DOWN) or (is_2d==false and key_repeating(KEY_RIGHT)))
 {
 initial=false;
 if(menu_position_y==max_y)
@@ -612,7 +614,8 @@ bounce_sound.play();
 }
 continue;
 }
-if(key_pressed(KEY_LEFT))
+// Column navigation only applies to real 2D menus; in 1D menus Left is handled as Up above.
+if(is_2d==true and key_pressed(KEY_LEFT))
 {
 initial=false;
 if(menu_position_x==0)
@@ -670,7 +673,8 @@ bounce_sound.play();
 }
 continue;
 }
-if(key_pressed(KEY_RIGHT))
+// Column navigation only applies to real 2D menus; in 1D menus Right is handled as Down above.
+if(is_2d==true and key_pressed(KEY_RIGHT))
 {
 initial=false;
 if(menu_position_x==max_x)
@@ -717,7 +721,7 @@ continue;
 }
 if(enable_home_and_end==true)
 {
-if(key_pressed(KEY_HOME))
+if(key_repeating(KEY_HOME))
 {
 initial=false;
 if(item_list[menu_position_x-1][0].active == true)
@@ -727,7 +731,7 @@ speak_item=true;
 }
 continue;
 }
-if(key_pressed(KEY_END))
+if(key_repeating(KEY_END))
 {
 initial=false;
 if(item_list[menu_position_x-1][max_y-1].active == true)

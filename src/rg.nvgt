@@ -335,7 +335,7 @@ menu.ats("delete all achievements,","borrar todos tus logros","achclear");
 menu.ats("exit","salir","esc");
 string o;
 if (lang==2) o=menu.run_extended("Bienvenido! Usa las flechas para seleccionar una opción y pulsa énter. Usa las teclas avanzar y retroceder página para cambiar el volumen de la música",true,"esc",true);
-if (lang==1) o=menu.run_extended("Welcome! Use the up and down arrow keys to choose an option, and enter to select it. You can use page up and page down to change the volume of the background music.",true,"esc",true);
+if (lang==1) o=menu.run_extended("Welcome! Use the arrow keys to choose an option, and enter to select it. You can use page up and page down to change the volume of the background music.",true,"esc",true);
 yespack();
 if (o=="ach") {
 select.play();

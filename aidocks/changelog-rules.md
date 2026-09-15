@@ -1,6 +1,6 @@
 ---
 name: changelog-rules
-description: "Rules for writing changelog entries in docks/changelog.txt — player-facing prose, sentence caps, per-version entry limits, reverse-chronological order. Adapted from CaveDefender/SimpleFighter (same dev)."
+description: "Rules for writing changelog entries in rg/docks/changelog.txt — player-facing prose, sentence caps, per-version entry limits, reverse-chronological order. Adapted from CaveDefender/SimpleFighter (same dev)."
 metadata: 
   node_type: memory
   type: feedback
@@ -8,7 +8,7 @@ metadata:
   modified: 2026-07-21T04:49:52.884Z
 ---
 
-Rules for writing new entries in `docks/changelog.txt` (a flat file — RhythmRage has no `docks/main/` vs `docks/builder/` split). Existing style is terse one-liners under a `New in X.Y.` header.
+Rules for writing new entries in `rg/docks/changelog.txt` (a flat file — RhythmRage has no `docks/main/` vs `docks/builder/` split). Existing style is terse one-liners under a `New in X.Y.` header.
 
 - **A changelog is a RECORD OF WHAT CHANGED, not a manual.** The readme is the manual. The changelog just says, in a sentence or two, what's new or different. If an entry starts explaining *how to use* a feature (keys, sub-options, mechanics), it has drifted into readme territory — pull it back to the high-level "what changed."
 - **A whole feature that lands in ONE version gets ONE concise "added X" entry**, not one entry per sub-feature/mechanic. Describe what it IS; let the readme carry every mechanic.

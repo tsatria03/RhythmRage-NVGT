@@ -18,7 +18,7 @@ The repo splits **source** from the **game data / run folder** (post-reorg):
 - **`rg/`** — the game's data/run folder (ships alongside the compiled exe): `packs/` (built encrypted `.pack` content — levels `.lvl`, tutorials `.tut`, `.ogg`; decryption key `<packname>guillemandoriolftw`), `mypacks/` (loose author sources — the **level tool** reads these, the game never does), `sounds/` (raw source for building the sound packs), `sounds1.pack`/`sounds2.pack` (built voice/UI sound packs, one per language), `docks/`, `parser.md` (level-script authoring reference), and the Python launchers `rg.py`/`lt.py`. No `lib/` — the compiler supplies the platform libraries (**[[nvgt-090-miniaudio-not-bass]]**).
 - **`build/`** — `tools.py`/`tools.bat`/`tools.ini`: a menu with git helpers plus **Compile** and **Package** for Windows + Mac.
 - **`releases/`** — gitignored build output: `windows/RhythmRage_windows/rg/` (game + `lt.exe` + empty `mypacks/`), `mac/RhythmRage_mac/rg.app`, and `archives/*.zip`.
-- **`aidocks/`** — these memory files. **`docks/`** (repo root) — player-facing docs (`changelog.txt`, `readme.txt`).
+- **`aidocks/`** (repo root) — these memory files. Player-facing docs live under **`rg/docks/`** (`changelog.txt`, `readme.txt`, `credits.txt`) with the level-script reference at `rg/parser.md`.
 
 The level tool (`lt.nvgt`) is a **separate authoring program, NOT part of the game**: it plays a pack's `.ogg` and finds millisecond/BPM marks for timing a level script, scanning `mypacks/` for source folders; its `r` key launches the game. It ships **Windows-only**.
 
