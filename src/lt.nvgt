@@ -1,4 +1,9 @@
 #include "bgt_compat.nvgt"
+#include"instance.nvgt"
+#include"sound_pool.nvgt"
+#include"includes/enhanced_menu.nvgt"
+#include"includes/history.nvgt"
+#include"includes/reader.nvgt"
 int lang=1;
 bool acopy;
 string running;
@@ -25,11 +30,12 @@ double distance;
 string pack;
 sound music;
 double cpos;
-#include "includes/enhanced_menu.nvgt"
 string path;
 message_history rd;
 bool installed;
-#include "includes/history.nvgt"
+// Distinct app_id so the tool's single-instance lock is separate from the game's (empty id) —
+// otherwise the tool and the game it launches with the r key would block each other.
+instance ltstance("leveltool");
 void help() {
 if (lang==1) rd.say("press space to play/stop. Press control space to move the cursor to the new position when it is playing");
 if (lang==2) rd.say("pulsa espacio para reproducir o parar. pulsa control espacio mientras se está reproduciendo para mover el cursor a esa posición.");
@@ -60,6 +66,14 @@ if (lang==2) alert("error",l2);
 if (exiting) exit();
 }
 void main() {
+// Only one copy of the level tool may run at a time. ltstance grabbed its named mutex at
+// startup; if another process already holds it, is_already_running is true.
+if (ltstance.is_already_running) {
+if (lang==1) alert("level tool","The level tool is already running.");
+if (lang==2) alert("herramienta del creador","la herramienta del creador ya se está ejecutando.");
+exit();
+return;
+}
 if (!file_exists("z.iss")) path=SCRIPT_COMPILED?"mypacks":"../rg/mypacks";
 if (file_exists("z.iss")) path=DIRECTORY_APPDATA+"/Oriol Gomez/rg/packs";
 if (lang==1) show_game_window("level tool");
