@@ -1,8 +1,8 @@
 - [NVGT engine location](nvgt-engine-location.md) — this game targets the new NVGT (Desktop\nvgt-main), not the legacy engine
 - [NVGT 0.90 uses miniaudio not BASS](nvgt-090-miniaudio-not-bass.md) — bass*.dll obsolete (compiled in); compiled lib/ needs only phonon + 3 screen-reader clients; distribution doc is outdated
-- [BGT-to-NVGT port notes](rhythmrage-bgt-to-nvgt-port.md) — loose-pack testing via generate_packs(), creatingpack mode, folder layout
+- [BGT-to-NVGT port notes](rhythm-rage-bgt-to-nvgt-port.md) — loose-pack testing via generate_packs(), creatingpack mode, folder layout
 - [BGT source has two game files](bgt-source-two-game-files.md) — game.bgt (2023, canonical, port basis, free store) vs z.bgt (2016 backup, legacy paid store); don't confuse them
-- [Run and build](rhythmrage-run-and-build.md) — src/ (scripts) vs rg/ (data) split, rg.py/lt.py launchers, path=../rg/ from source, build/tools.py compile+package into releases/ (Win folder + Mac .app), level tool Windows-only
+- [Run and build](rhythm-rage-run-and-build.md) — src/ (scripts) vs rg/ (data) split, rg.py/lt.py launchers, path=../rg/ from source, build/tools.py compile+package into releases/ (Win folder + Mac .app), level tool Windows-only
 - [Commit authorship](commit-authorship.md) — never add Claude as author/co-author on commits
 - [Changelog rules](changelog-rules.md) — docks/changelog.txt: player-facing prose, 1-3 sentence entries, per-version caps (20/.0, 10/minor), reverse-chronological
 - [Confirm before implementing](confirm-before-implementing.md) — treat design discussion as a question; a message ending in ? means respond and wait, don't edit

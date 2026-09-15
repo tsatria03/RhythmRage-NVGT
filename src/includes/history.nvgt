@@ -1,4 +1,3 @@
-#include "reader.nvgt"
 class message_history {
 string[] messages;
 bool auto_move_to_end=false;

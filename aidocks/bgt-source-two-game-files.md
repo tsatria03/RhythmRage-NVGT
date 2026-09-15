@@ -6,7 +6,7 @@ metadata:
   type: reference
 ---
 
-The original BGT source ([[rhythmrage-bgt-to-nvgt-port]], at `C:\Users\tonys\OneDrive\Desktop\rhythm-rage bgt-src`) contains **two nearly-identical game scripts**. They look almost the same but are different versions of the game's life — don't mix them up when diffing the port:
+The original BGT source ([[rhythm-rage-bgt-to-nvgt-port]], at `C:\Users\tonys\OneDrive\Desktop\rhythm-rage bgt-src`) contains **two nearly-identical game scripts**. They look almost the same but are different versions of the game's life — don't mix them up when diffing the port:
 
 - **`game.bgt`** — 2023-12-05, ~2370 lines. The **newer, canonical** version; the NVGT port was made from this (correctly). **Free store**: `store()`/`packloop()` have no credit gate, no price, no `lesscash` on buy — buying a pack just adds it to `unlocks` and switches to it. On no packs left it goes to `getpacks()` (the port later changed this to return to the menu at the dev's request).
 - **`z.bgt`** — 2016-07-25, ~1799 lines. An **older snapshot/backup** ("z" prefix matches `z.iss`, the installer marker). **Paid store** (a legacy design later removed): `store()` gates on `if (cash<2500)` (bounce to menu with a "not enough credits" message), forces `if (!SCRIPT_COMPILED) cash=50000` for dev testing, deducts `lesscash(7)` on buy, and plays a `nomore` sound (then returns to menu) when all packs are owned.

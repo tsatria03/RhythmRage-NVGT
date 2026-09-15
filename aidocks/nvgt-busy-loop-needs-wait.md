@@ -12,4 +12,4 @@ In NVGT, any `while` loop that reads input (`key_pressed`/`key_released`/`key_do
 - `calibrate_keyboard()` — fixed with `wait(1)` (see its inline comment).
 - The **interactive-tutorial** loop in `startlev()`/`loadlev()` (the no-args `interactive` branch that runs `intersound` cues) — had NO wait, so interactive tutorials in every pack failed to register any key press (Enter always "missed", Escape dead). Fixed 2026-09-14 by adding `wait(5)` at the **top** of the `while(true)` loop, so the yield also runs after each `continue`. Interactive tutorials live only in the `extension1` pack ([[bgt-source-two-game-files]] context).
 
-**How to apply:** when porting or writing any NVGT input loop, put a `wait(3..5)` inside it (top of the loop is safest so `continue` paths still yield). Related: [[nvgt-key-pressed-oneshot]] (edge-triggered reads), [[rhythmrage-bgt-to-nvgt-port]].
+**How to apply:** when porting or writing any NVGT input loop, put a `wait(3..5)` inside it (top of the loop is safest so `continue` paths still yield). Related: [[nvgt-key-pressed-oneshot]] (edge-triggered reads), [[rhythm-rage-bgt-to-nvgt-port]].

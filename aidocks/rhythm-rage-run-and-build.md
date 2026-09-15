@@ -1,5 +1,5 @@
 ---
-name: rhythmrage-run-and-build
+name: rhythm-rage-run-and-build
 description: "How RhythmRage runs from source (launchers, auto_chdir, path=../rg/) and how build/tools.py compiles + packages Windows/Mac into releases/"
 metadata:
   node_type: memory
@@ -7,6 +7,8 @@ metadata:
 ---
 
 Post-reorg, RhythmRage splits **source** (`src/`: `rg.nvgt`, `lt.nvgt`, `lt.properties`, `includes/`) from the **game data/run folder** (`rg/`: `packs/`, `mypacks/`, `sounds/`, `sounds1.pack`, `sounds2.pack`, `docks/`, `parser.md`, and the launchers). Runtime/compiler + auto_chdir facts: [[nvgt-engine-location]]; miniaudio/libs: [[nvgt-090-miniaudio-not-bass]].
+
+**Source is modular (not one monolith):** `rg.nvgt` is now just the entry point — globals, `main()`, and the menu callbacks (`checkmenu`/`menu2`) — and pulls in the local includes via the wildcard `#include"includes/*.nvgt"`. Gameplay lives in `includes/game.nvgt` (`startlev`/`loadlev` parser, rhythm loop, store/change-pack/downloader browsers + first-letter helpers `next_first_letter`/`preview_pack`); the main menu + level select in `includes/menu.nvgt` (`start`/`startgame`); pack/sound-pack building in `includes/packgen.nvgt`. Plus the shared libs `classes.nvgt`, `enhanced_menu.nvgt`, `history.nvgt`, `reader.nvgt`, `number_speaker.nvgt`, `downloader.nvgt`, `utils.nvgt`. `lt.nvgt` uses **targeted** includes (not the wildcard). NVGT's builder de-dupes includes by absolute path, so a file pulled by both the wildcard and an explicit `#include` compiles once. When searching for a function, grep `src/` — it may be in any of these.
 
 **Running from source.** Launchers `rg/rg.py` and `rg/lt.py` run `C:\nvgt2\nvgt2.exe` on `..\src\rg.nvgt` / `..\src\lt.nvgt` (full-featured launchers: hide their own console, capture compile output to `errors.txt`/`lt_errors.txt`, watch ~5s then detach on a clean start). NVGT's auto_chdir sets the working directory to the **script's folder (`src/`)** from source, so the game reaches its data (in the sibling `rg/`) via a `path="../rg/"` prefix: `rg.nvgt` main() has `if (!installed and !SCRIPT_COMPILED) path="../rg/";` (installed → `%APPDATA%/Oriol Gomez/rg/`; compiled → `path=""`). `generate_soundpack()` reads `path+"sounds/*"`. `lt.nvgt` scans `SCRIPT_COMPILED?"mypacks":"../rg/mypacks"`. Save is always `%APPDATA%\Oriol Gomez\rg\saves\rg.dat` (absolute, in ser()/deser()); sound packs are `path+"sounds"+lang+".pack"` (nopack() in includes/utils.nvgt).
 
