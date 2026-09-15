@@ -16,17 +16,12 @@ _tools = configparser.ConfigParser()
 _tools.read(os.path.join(os.path.expanduser("~"), ".game_tools", "tools.ini"))
 
 GAME         = _cfg["game"]["name"]
-# PASSWORD     = _cfg["game"]["password"]  # disabled with the release pipeline (not in tools.ini)
 NVGT_FILE    = _cfg["game"]["nvgt_file"]
 NVGT_OUT     = os.path.splitext(NVGT_FILE)[0]
-SRC_DIR      = os.path.join(REPO_DIR, "src")    # the .nvgt source now lives here (post-reorg)
-ASSETS_DIR   = os.path.join(REPO_DIR, "sf")     # assets (data, docks, lib, sounds) live here
-BUNDLE       = os.path.join(SRC_DIR, NVGT_OUT)  # nvgt -c (run from src) produces this bundle folder
-VERSION_NVGT = os.path.join(SRC_DIR, "includes", "version.nvgt")  # generated mirror of version.txt (the source of truth)
-ASSET_FOLDERS = ["data", "docks", "lib"]  # NOT sounds: the 2.3 GB sounds/ folder is downloaded on first run (downloadsounds), never bundled
+SRC_DIR      = os.path.join(REPO_DIR, "src")    # the .nvgt source lives here
 
-# --- Compile step (Windows + Mac) ---
-NVGT2     = r"C:\nvgt2\nvgt2.exe"                 # miniaudio NVGT compiler this game uses (the shared ~/.game_tools nvgt is the legacy engine)
+# --- Compile / package / release ---
+NVGT2     = r"C:\nvgt2\nvgt2.exe"                 # miniaudio NVGT compiler this game uses
 RG_DIR    = os.path.join(REPO_DIR, "rg")          # the game's data folder
 # Copied from rg/ into every build. NOT: mypacks/ (authoring), sounds/ (raw source), *.py launchers, or lib (the
 # bundler already supplies the correct per-platform libraries).
@@ -35,21 +30,7 @@ SHIP      = ["docks", "packs", "parser.md", "sounds1.pack", "sounds2.pack"]
 WIN_DEST  = os.path.join(REPO_DIR, "releases", "windows", "RhythmRage_windows", NVGT_OUT)          # ...\rg  (folder: rg.exe + lib + data)
 MAC_DEST  = os.path.join(REPO_DIR, "releases", "mac", "RhythmRage_mac", NVGT_OUT + ".app")         # ...\rg.app
 ARCHIVES_DIR = os.path.join(REPO_DIR, "releases", "archives")  # .zip packages land here
-
-NVGT    = _tools["tools"]["nvgt"]  # shared across all the legacy-engine games; set to the legacy build in ~/.game_tools/tools.ini
-SEVENZIP = _tools["tools"]["sevenzip"]
-GH      = _tools["tools"]["gh"]
-
-# Release/packaging paths disabled with the release pipeline (they depend on PASSWORD):
-# WIN_SOURCE   = os.path.join(REPO_DIR, "releases", "windows", f"{GAME}_password_is_{PASSWORD}", NVGT_OUT)
-# ARCHIVE_DIR  = os.path.join(REPO_DIR, "releases", "archives")
-# ARCHIVE_NAME = f"{GAME}_password_is_{PASSWORD}.7z"
-# ARCHIVE      = os.path.join(ARCHIVE_DIR, ARCHIVE_NAME)
-# RELEASE_DIR  = os.path.join(REPO_DIR, "releases", "windows", f"{GAME}_password_is_{PASSWORD}")
-
-SKIP = 0
-DO = 1
-SILENT_SKIP = 2
+GH        = _tools["tools"]["gh"]                 # GitHub CLI, from ~/.game_tools/tools.ini (used by the release step)
 
 def ask(prompt):
     return input(f"{prompt} (Y/N): ").strip().upper() == "Y"
@@ -69,13 +50,6 @@ def clip(text):
 def get_version():
     with open(os.path.join(SCRIPT_DIR, "version.txt"), "r") as f:
         return f.read().strip()
-
-def sync_version_file(version):
-    # Mirror version.txt into version.nvgt so the compiled build carries the right version;
-    # a compiled release has no build/version.txt beside it to read at runtime. CRLF like the repo.
-    with open(VERSION_NVGT, "w", newline="", encoding="utf-8") as f:
-        f.write(f'string version = "{version}";\r\n')
-    print(f"Synced version {version} into version.nvgt.\n")
 
 # ── Commit ────────────────────────────────────────────────────────────────────
 
@@ -313,146 +287,6 @@ def do_reset(sha):
     print("Reset complete.")
     return True
 
-# ── Release ───────────────────────────────────────────────────────────────────
-
-def run_release(skip_compile, skip_package, skip_release, skip_empty_release, interactive=True):
-    version = get_version()
-    if not version:
-        print("ERROR: Could not read version from version.txt.")
-        return
-
-    title = f"{GAME} V{version}"
-    tag = f"V{version}0"
-
-    print(f"\nVersion: {version}")
-    print(f"Tag:     {tag}")
-    print(f"Title:   {title}\n")
-
-    if skip_release != SILENT_SKIP:
-        head_sha = run_out(["git", "rev-parse", "--verify", "HEAD"])
-        existing_tag_sha = run_out(["git", "rev-parse", "--verify", "--quiet", f"refs/tags/{tag}"])
-        existing_release = subprocess.run([GH, "release", "view", tag], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=REPO_DIR).returncode == 0
-        if existing_tag_sha or existing_release:
-            print(f"WARNING: {tag} already exists.")
-            if existing_tag_sha:
-                short = existing_tag_sha[:7]
-                msg = run_out(["git", "log", "--format=%s", "-1", existing_tag_sha])
-                if existing_tag_sha != head_sha:
-                    head_short = head_sha[:7] if head_sha else "?"
-                    head_msg = run_out(["git", "log", "--format=%s", "-1", "HEAD"])
-                    print(f"  Tag points to {short} {msg}")
-                    print(f"  This release will MOVE the tag to HEAD ({head_short} {head_msg}).")
-                else:
-                    print(f"  Tag already points to HEAD, so it will not move.")
-            if existing_release:
-                print(f"  GitHub release {tag} will be deleted and recreated with new assets.")
-            print()
-            if interactive:
-                if not ask("Continue with the release?"):
-                    print("Release cancelled.")
-                    return
-            else:
-                print("ERROR: Refusing to overwrite an existing tag or release in non-interactive mode.")
-                print("       Delete the tag and release manually first, or run tools.py interactively.")
-                return
-
-    # Compile
-    do_compile = False
-    if skip_compile == DO:
-        do_compile = True
-    elif skip_compile == SKIP:
-        do_compile = ask("Do you want to compile this project?")
-
-    if do_compile:
-        print("Compiling NVGT source...")
-        sync_version_file(version)
-        # The source lives in src/; run nvgt -c from there so the bundle lands in src/<name>.
-        if not run_cmd([NVGT, "-c", "-Q", NVGT_FILE], cwd=SRC_DIR):
-            print("ERROR: NVGT compilation failed.")
-            return
-        print("Compilation successful.\n")
-        print("Copying assets into the compiled bundle...")
-        # The assets live in sf/; copy them into the bundle so they sit cwd-relative beside the exe
-        # (lib merges with the runtime DLLs nvgt -c already placed there).
-        for folder in ASSET_FOLDERS:
-            asset_src = os.path.join(ASSETS_DIR, folder)
-            if not os.path.isdir(asset_src):
-                print(f"ERROR: missing asset folder: {asset_src}")
-                return
-            shutil.copytree(asset_src, os.path.join(BUNDLE, folder), dirs_exist_ok=True)
-        print("Replacing compiled output in release folder...")
-        cst_dest = os.path.join(RELEASE_DIR, NVGT_OUT)
-        if os.path.exists(cst_dest):
-            shutil.rmtree(cst_dest)
-        shutil.move(BUNDLE, cst_dest)
-        print("Release folder updated.\n")
-    elif skip_compile == SKIP:
-        print("Skipping compilation.\n")
-
-    # Package
-    do_package = False
-    if skip_package == DO:
-        do_package = True
-    elif skip_package == SKIP:
-        do_package = ask("Do you want to package this project?")
-
-    if do_package:
-        if not os.path.exists(WIN_SOURCE):
-            print("ERROR: cst folder not found in release directory. Please compile the full project first.")
-            return
-        print("Building Windows 7z archive...")
-        if os.path.exists(ARCHIVE):
-            os.remove(ARCHIVE)
-        os.makedirs(ARCHIVE_DIR, exist_ok=True)
-        if not run_cmd([SEVENZIP, "a", "-t7z", ARCHIVE, WIN_SOURCE, "-mx=9", "-m0=LZMA2", "-md=64m", "-mfb=64", "-ms=on", "-mmt=12", f"-p{PASSWORD}", "-mhe=on"]):
-            print("ERROR: 7z archive build failed.")
-            return
-        print("Archive built successfully.\n")
-    elif skip_package == SKIP:
-        print("Skipping packaging.\n")
-
-    # Release
-    do_rel = False
-    if skip_release == DO:
-        do_rel = True
-    elif skip_release == SKIP:
-        do_rel = ask("Do you want to release this project?")
-
-    if not do_rel:
-        if skip_release == SKIP:
-            print("Skipping release.\n")
-        return
-
-    assets = []
-    if os.path.exists(ARCHIVE):
-        assets.append(ARCHIVE)
-
-    if not assets:
-        print("WARNING: No assets found.\n")
-        proceed = False
-        if skip_empty_release == DO:
-            proceed = True
-        elif skip_empty_release == SKIP:
-            proceed = ask("Do you still want to create an empty release?")
-        if not proceed:
-            print("Release cancelled.\n")
-            return
-
-    print(f"Tagging latest commit as {tag}...")
-    run_cmd(["git", "tag", "-f", tag], cwd=REPO_DIR)
-    run_cmd(["git", "push", "origin", "-f", tag], cwd=REPO_DIR)
-
-    print("\nDeleting existing release if it exists...")
-    subprocess.run([GH, "release", "delete", tag, "--yes"], cwd=REPO_DIR, stderr=subprocess.DEVNULL)
-
-    print(f"\nCreating GitHub release {title} with tag {tag}...\n")
-    cmd = [GH, "release", "create", tag] + assets + ["--title", title, "--notes", ""]
-    if not run_cmd(cmd, cwd=REPO_DIR):
-        print("ERROR: GitHub release creation failed.")
-        return
-
-    print("\nRelease complete.\n")
-
 # ── Build (compile Windows + Mac) ───────────────────────────────────────────────
 
 def _copy_ship(asset_dest):
@@ -537,8 +371,9 @@ def do_build():
         return
     # Mac: game only for now (the level tool is Windows-first).
     if not _build_one("mac", NVGT_OUT + ".app", MAC_DEST, os.path.join("Contents", "Resources")):
-        return
+        return False
     print("Build complete.\n")
+    return True
 
 # ── Package (zip) ───────────────────────────────────────────────────────────────
 
@@ -590,10 +425,70 @@ def _zip_mac():
 def do_package():
     if not ask("Package the Windows and Mac builds into zips?"):
         print("Cancelled.")
-        return
+        return False
     print()
-    _zip_windows()
-    _zip_mac()
+    ok_win = _zip_windows()
+    ok_mac = _zip_mac()
+    return ok_win and ok_mac
+
+# ── Release (tag + GitHub release) ──────────────────────────────────────────────
+
+def do_release():
+    # Version comes only from build/version.txt (the game code never reads it). Tag keeps the trailing-0 form
+    # (1.1 -> V1.10); the GitHub release is titled V1.1. Attaches the two zips built by Compile (6) + Package (7).
+    version = get_version()
+    if not version:
+        print("ERROR: could not read build/version.txt.")
+        return False
+    tag = f"V{version}0"    # e.g. 1.1 -> V1.10
+    title = f"V{version}"   # e.g. V1.1
+    win_zip = os.path.join(ARCHIVES_DIR, "RhythmRage_windows.zip")
+    mac_zip = os.path.join(ARCHIVES_DIR, "RhythmRage_mac.zip")
+    assets = [z for z in (win_zip, mac_zip) if os.path.exists(z)]
+    print(f"\nVersion: {version}")
+    print(f"Tag:     {tag}")
+    print(f"Release: {title}")
+    print("Assets:  " + (", ".join(os.path.basename(a) for a in assets) if assets else "(none found)"))
+    print()
+    if not assets:
+        print("ERROR: no archives in releases/archives/. Run Compile (6) then Package (7) first.")
+        return False
+    if len(assets) < 2:
+        print("WARNING: only one platform archive was found; the other is missing.\n")
+    # Overwrite guard: warn if the tag or release already exists.
+    head_sha = run_out(["git", "rev-parse", "--verify", "HEAD"])
+    existing_tag_sha = run_out(["git", "rev-parse", "--verify", "--quiet", f"refs/tags/{tag}"])
+    existing_release = subprocess.run([GH, "release", "view", tag], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=REPO_DIR).returncode == 0
+    if existing_tag_sha or existing_release:
+        print(f"WARNING: {tag} already exists.")
+        if existing_tag_sha and existing_tag_sha != head_sha:
+            print("  The tag will be MOVED to the current HEAD.")
+        if existing_release:
+            print(f"  The GitHub release {tag} will be deleted and recreated with new assets.")
+        print()
+    if not ask(f"Create GitHub release {title} (tag {tag}) with {len(assets)} asset(s)?"):
+        print("Cancelled.")
+        return False
+    print(f"\nTagging HEAD as {tag}...")
+    run_cmd(["git", "tag", "-f", tag], cwd=REPO_DIR)
+    run_cmd(["git", "push", "origin", "-f", tag], cwd=REPO_DIR)
+    print("Deleting any existing release for this tag...")
+    subprocess.run([GH, "release", "delete", tag, "--yes"], cwd=REPO_DIR, stderr=subprocess.DEVNULL)
+    print(f"Creating GitHub release {title}...")
+    cmd = [GH, "release", "create", tag] + assets + ["--title", title, "--notes", ""]
+    if not run_cmd(cmd, cwd=REPO_DIR):
+        print("ERROR: GitHub release creation failed.")
+        return False
+    print("\nRelease complete.\n")
+    return True
+
+def do_full_release():
+    # Compile -> package -> release in one go. Each step self-confirms; abort the chain if a step fails/cancels.
+    if not do_build():
+        return
+    if not do_package():
+        return
+    do_release()
 
 # ── Main menu ─────────────────────────────────────────────────────────────────
 
@@ -613,12 +508,11 @@ def menu():
         print(" --- Build ---")
         print(" 6. Compile (Windows + Mac)")
         print(" 7. Package (Windows + Mac zip)")
-        # Release options hidden for now (the GitHub-release pipeline is deferred):
-        # print(" --- Release ---")
-        # print(" 8. Full release")
-        # print(" 9. Release only")
+        print(" --- Release ---")
+        print(" 8. Release (tag + GitHub release)")
+        print(" 9. Full release (compile + package + release)")
         print(" ---")
-        print(" 8. Exit")
+        print(" 10. Exit")
         print("========================")
         choice = input("Choose an option: ").strip()
         print()
@@ -636,39 +530,20 @@ def menu():
             do_build()
         elif choice == "7":
             do_package()
-        # Release options hidden for now (functions kept above for when the pipeline is finalized):
-        # elif choice == "8":
-        #     run_release(SKIP, SKIP, SKIP, SKIP)            # full release
-        # elif choice == "9":
-        #     run_release(SILENT_SKIP, SILENT_SKIP, DO, DO)  # release only
         elif choice == "8":
+            do_release()
+        elif choice == "9":
+            do_full_release()
+        elif choice == "10":
             sys.exit(0)
         else:
-            print("Invalid choice. Please enter 1-8.")
+            print("Invalid choice. Please enter 1-10.")
 
 if __name__ == "__main__":
     args = sys.argv[1:]
     if not args:
         menu()
     else:
-        # Release pipeline is disabled for now, so the scripted (flag-based) release entry point is guarded
-        # off. The original argument handling is kept below, commented out, for when compilation/release is
-        # finalized.
-        print("The release pipeline is currently disabled. Run tools.py with no arguments for the git menu.")
+        # This tool is interactive only -- build, package, and release all live in the menu; it takes no arguments.
+        print("tools.py takes no arguments. Run it with no arguments for the menu.")
         sys.exit(2)
-        # usage = (
-        #     "Usage: tools.py <skip_compile> <skip_package> <skip_release> <skip_empty_release>\n"
-        #     f"  Each flag must be {SKIP} (ask), {DO} (force run), or {SILENT_SKIP} (skip silently)."
-        # )
-        # if len(args) != 4:
-        #     print(f"Error: expected 4 args, got {len(args)}.\n{usage}")
-        #     sys.exit(2)
-        # try:
-        #     flags = [int(a) for a in args]
-        # except ValueError:
-        #     print(f"Error: all args must be integers.\n{usage}")
-        #     sys.exit(2)
-        # if any(f not in (SKIP, DO, SILENT_SKIP) for f in flags):
-        #     print(f"Error: each flag must be {SKIP}, {DO}, or {SILENT_SKIP}.\n{usage}")
-        #     sys.exit(2)
-        # run_release(*flags, interactive=False)

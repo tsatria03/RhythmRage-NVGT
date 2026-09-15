@@ -1,6 +1,9 @@
 .claude
 New File*.txt
 
+# Python bytecode cache
+__pycache__/
+
 # Compiled release builds
 releases/
 
