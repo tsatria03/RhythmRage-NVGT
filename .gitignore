@@ -15,6 +15,5 @@ src/rg.app/
 rg/lib/
 
 # Binary media assets
-*.pack
 rg/mypacks/
 rg/packs/
