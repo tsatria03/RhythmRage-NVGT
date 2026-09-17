@@ -20,3 +20,6 @@ rg/packs/
 
 # Local player save (the dev's own profile, written here when testing from source) - never commit or ship
 rg/data/saves/rg.dat
+
+# Generated pack-downloader index (built by tools.py, uploaded to the VPS root) - not source
+rg/packinfo.txt

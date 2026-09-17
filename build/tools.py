@@ -437,6 +437,31 @@ def do_package():
     ok_mac = _zip_mac()
     return ok_win and ok_mac
 
+# ── Pack index (packinfo.txt for the downloader) ────────────────────────────────
+
+def do_packindex():
+    # The in-game pack downloader (getpacks) fetches packinfo.txt from the pack-server ROOT and reads one line
+    # per pack: "<name>.pack <size-in-bytes>". This scans the built .pack files in rg/packs and writes the index
+    # to the rg/ root, mirroring the VPS layout: packinfo.txt at RhythmRage/ (root), packs at RhythmRage/packs/.
+    packs_dir = os.path.join(RG_DIR, "packs")
+    if not os.path.isdir(packs_dir):
+        print(f"ERROR: packs folder not found at {packs_dir}.")
+        return False
+    packs = sorted(f for f in os.listdir(packs_dir)
+                   if f.lower().endswith(".pack") and os.path.isfile(os.path.join(packs_dir, f)))
+    if not packs:
+        print(f"No .pack files found in {packs_dir} to index.")
+        return False
+    lines = [f"{name} {os.path.getsize(os.path.join(packs_dir, name))}" for name in packs]
+    out_path = os.path.join(RG_DIR, "packinfo.txt")
+    with open(out_path, "w", newline="\n") as f:
+        f.write("\n".join(lines) + "\n")
+    print(f"Wrote {out_path} with {len(lines)} pack(s):")
+    for l in lines:
+        print("  " + l)
+    print("\nUpload packinfo.txt to RhythmRage/ (root) and the .pack files to RhythmRage/packs/ on the VPS.")
+    return True
+
 # ── Release (tag + GitHub release) ──────────────────────────────────────────────
 
 def do_release():
@@ -514,11 +539,12 @@ def menu():
         print(" --- Build ---")
         print(" 6. Compile (Windows + Mac)")
         print(" 7. Package (Windows + Mac zip)")
+        print(" 8. Generate pack index (packinfo.txt for the downloader)")
         print(" --- Release ---")
-        print(" 8. Release (tag + GitHub release)")
-        print(" 9. Full release (compile + package + release)")
+        print(" 9. Release (tag + GitHub release)")
+        print(" 10. Full release (compile + package + release)")
         print(" ---")
-        print(" 10. Exit")
+        print(" 11. Exit")
         print("========================")
         choice = input("Choose an option: ").strip()
         print()
@@ -537,13 +563,15 @@ def menu():
         elif choice == "7":
             do_package()
         elif choice == "8":
-            do_release()
+            do_packindex()
         elif choice == "9":
-            do_full_release()
+            do_release()
         elif choice == "10":
+            do_full_release()
+        elif choice == "11":
             sys.exit(0)
         else:
-            print("Invalid choice. Please enter 1-10.")
+            print("Invalid choice. Please enter 1-11.")
 
 if __name__ == "__main__":
     args = sys.argv[1:]

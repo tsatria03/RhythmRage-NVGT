@@ -1903,13 +1903,16 @@ void getpacks() {
 nopack();
 if (lang==1) rd.say("retrieving data...");
 if (lang==2) rd.say("Consultando servidor...");
+// Pack server root: the index (packinfo.txt) sits here, and the downloadable packs live in the packs/
+// subfolder below it (packbase+"packs/"+<name>.pack).
+string packbase="http://reality-breaker-studios.net/RhythmRage/";
 downloader dl;
 bool dlb;
 int percent=0;
 packing=true;
 http net;
 string result="";
-if(!net.get("http://oriolgomez.com/rgpacks/packinfo.php"))
+if(!net.get(packbase+"packinfo.txt"))
 {
 if (lang==1) rd.say("Network error. sorry!");
 if (lang==2) rd.say("Error en la red. Lo siento!");
@@ -1928,21 +1931,20 @@ if (lang==2) rd.say("Error en la red. Lo siento!");
 start();
 return;
 }
-string[] results=string_split(result,".pack",true);
-if (results.length()<2) {
-if (lang==1) rd.say("Network error. sorry!");
-if (lang==2) rd.say("Error en la red. Lo siento!");
-start();
-return;
-}
+// packinfo.txt lists one pack per line: "<name>.pack <size-in-bytes>". Split each line at ".pack" so the
+// name (which may contain spaces) is everything before it and the size is what follows.
+string[] lines=string_split(result,"\n",false);
 string[] actualpacks;
-for (uint i=0;i<results.length();i=i+2) {
-if (!file_exists(path+"packs/"+url_decode(results[i])+".pack")) {
-actualpacks.insert_last(url_decode(results[i]));
-}
-else {
-if (file_size(path+"packs/"+url_decode(results[i])+".pack")!=string_to_number(results[i+1])) actualpacks.insert_last(url_decode(results[i]));
-}
+for (uint i=0;i<lines.length();i++) {
+string line=string_replace(lines[i],"\r","",true);
+int p=string_contains(line,".pack",1);
+if (p==-1) continue;
+string name=string_left(line,p);
+if (name=="") continue;
+string sizestr=string_replace(string_trim_left(line,p+5)," ","",true);
+string local=path+"packs/"+name+".pack";
+if (!file_exists(local)) actualpacks.insert_last(name);
+else if (file_size(local)!=string_to_number(sizestr)) actualpacks.insert_last(name);
 }
 if (actualpacks.length()==0) {
 if (lang==1) rd.say("There are no more packs to download! Why don't you make one?");
@@ -1961,22 +1963,22 @@ packing=false;
 if (key_repeating(KEY_DOWN) or key_repeating(KEY_RIGHT)) {
 pos+=1;
 if (pos>actualpacks.length()-1) pos=0;
-rd.say(url_decode(actualpacks[pos]));
+rd.say(actualpacks[pos]);
 }
 if (key_repeating(KEY_UP) or key_repeating(KEY_LEFT)) {
 pos-=1;
 if (pos<0) pos=actualpacks.length()-1;
-rd.say(url_decode(actualpacks[pos]));
+rd.say(actualpacks[pos]);
 }
 string chars=get_characters();
 if (chars!="") {
 int idx=next_first_letter(actualpacks, pos, chars.substr(0,1).lower());
-if (idx>=0) { pos=idx; rd.say(url_decode(actualpacks[pos])); }
+if (idx>=0) { pos=idx; rd.say(actualpacks[pos]); }
 }
 if (key_pressed(KEY_RETURN)) {
 if (lang==1) rd.say("Please wait while the pack is downloaded.");
 if (lang==2) rd.say("Por favor espera mientras descargamos tu pack.");
-dlb=dl.initiate_download("http://oriolgomez.com/rgpacks/"+actualpacks[pos]+".pack",path+"packs/"+url_decode(actualpacks[pos])+".pack");
+dlb=dl.initiate_download(packbase+"packs/"+actualpacks[pos]+".pack",path+"packs/"+actualpacks[pos]+".pack");
 if (!dlb) {
 rd.say("error!");
 start();
