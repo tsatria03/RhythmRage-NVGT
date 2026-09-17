@@ -1,4 +1,5 @@
 ﻿New in 1.2.
+Pressing escape to leave a level now stops any sounds that were still playing, instead of letting them finish after you have left.
 Fixed the Rhythm and Spell level in the Retro pack, where the letters were silent and the level failed with an error.
 The game now remembers which pack you were playing and reopens it when you restart, instead of always going back to the default pack.
 Your saved game is now kept in a data folder right next to the game, so you can move the whole game folder to another computer and keep your progress.

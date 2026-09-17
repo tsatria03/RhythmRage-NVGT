@@ -463,6 +463,11 @@ if (keys[0]==KEY_END && creatingpack) {
 rd.say(music.position);
 }
 else if (keys[0]==KEY_ESCAPE) {
+// Silence everything the level was playing before leaving: the music, the shared sound pool (play/type-1
+// actions) and every action's own pool (type-2 tap-and-hold), so nothing keeps sounding after escape.
+music.stop();
+pool.destroy_all();
+for (uint i=0;i<actions.length();i++) actions[i].apool.destroy_all();
 if (creatingpack and com!="") exit();
 else startgame(1);
 }
