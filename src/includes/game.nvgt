@@ -1933,11 +1933,10 @@ if (lang==2) rd.say("Error en la red. Lo siento!");
 start();
 return;
 }
-// pack_index.txt lists one pack per line: "<name>.pack <size-in-bytes>". We only need the name: split each
-// line at ".pack" and take everything before it (names may contain spaces). Offer a pack only if the player
-// doesn't already have a file by that name. The size after the name is ignored - it used to drive a "newer
-// version available" re-offer, but that re-listed already-downloaded packs whenever a local copy wasn't
-// byte-identical to the indexed one, so it was dropped.
+// pack_index.txt lists one pack per line: "<name>.pack". Split each line at ".pack" and take everything
+// before it (names may contain spaces); anything after ".pack" is ignored, so an older index that still has
+// a trailing size on each line also parses fine. Offer a pack only if the player doesn't already have a file
+// by that name (there is no size/version comparison - that used to re-list already-downloaded packs).
 string[] lines=string_split(result,"\n",false);
 string[] actualpacks;
 for (uint i=0;i<lines.length();i++) {
