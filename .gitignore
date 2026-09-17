@@ -23,4 +23,4 @@ rg/data/packs/
 rg/data/saves/rg.dat
 
 # Generated pack-downloader index (built by tools.py, uploaded to the VPS root) - not source
-rg/packinfo.txt
+rg/pack_index.txt

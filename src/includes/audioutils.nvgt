@@ -47,26 +47,22 @@ float[]@ ringmod(float[]@ modulator, float[]@ carrier) {
     }
     return @result;
 }
+// nvgt2 (miniaudio) has no sound.push_memory; load a complete PCM buffer with load_pcm instead.
+// stream_end is kept for call-site compatibility but is unused (load_pcm loads the whole buffer at once).
 sound@ push_audio(float[]@ data, uint sr = 44100, uint channels = 1, bool stream_end=false) {
-    const string bytes = pack_audio(data);
     sound s;
-    s.load("");
-    s.push_memory(bytes, stream_end, sr, channels);
-    return @s; 
+    s.load_pcm(data, int(sr), int(channels));
+    return @s;
 }
 sound@ push_audio(const string&in bytes, uint sr = 44100, uint channels = 1, bool stream_end=false) {
     sound s;
-    s.load("");
-    s.push_memory(bytes, stream_end, sr, channels);
+    s.load_pcm(unpack_audio(bytes), int(sr), int(channels));
     return @s; }
 bool push_audio(sound@ s, float[]@ data, uint sr = 44100, uint channels = 1, bool stream_end=false) {
-    const string bytes = pack_audio(data);
-    if (!s.active) s.load("");
-    return s.push_memory(bytes, stream_end, sr, channels);
+    return s.load_pcm(data, int(sr), int(channels));
 }
 bool push_audio(sound@ s, const string&in bytes, uint sr = 44100, uint channels = 1, bool stream_end=false) {
-    if (!s.active) s.load("");
-    return s.push_memory(bytes, stream_end, sr, channels);
+    return s.load_pcm(unpack_audio(bytes), int(sr), int(channels));
 }
 float[]@ silence(float dur, uint sr=44100){
     uint num_samples=(dur/1000)*sr;

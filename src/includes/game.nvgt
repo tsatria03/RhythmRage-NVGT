@@ -1903,7 +1903,7 @@ void getpacks() {
 nopack();
 if (lang==1) rd.say("retrieving data...");
 if (lang==2) rd.say("Consultando servidor...");
-// Pack server root: the index (packinfo.txt) sits here, and the downloadable packs live in the packs/
+// Pack server root: the index (pack_index.txt) sits here, and the downloadable packs live in the packs/
 // subfolder below it (packbase+"packs/"+<name>.pack).
 string packbase="http://reality-breaker-studios.net/RhythmRage/";
 downloader dl;
@@ -1912,7 +1912,7 @@ int percent=0;
 packing=true;
 http net;
 string result="";
-if(!net.get(packbase+"packinfo.txt"))
+if(!net.get(packbase+"pack_index.txt"))
 {
 if (lang==1) rd.say("Network error. sorry!");
 if (lang==2) rd.say("Error en la red. Lo siento!");
@@ -1924,15 +1924,20 @@ result+=net.response_body;
 wait(5);
 }
 result+=net.response_body;
-if (net.status_code!=200) result="";
-if (result=="") {
+// A non-200 status is a real server problem, so treat that as a network error. But a reachable-yet-empty
+// index (HTTP 200 with a blank body) is NOT an error - it just means no packs are listed. Let that fall
+// through to the "there are no packs" message below instead of falsely blaming the connection.
+if (net.status_code!=200) {
 if (lang==1) rd.say("Network error. sorry!");
 if (lang==2) rd.say("Error en la red. Lo siento!");
 start();
 return;
 }
-// packinfo.txt lists one pack per line: "<name>.pack <size-in-bytes>". Split each line at ".pack" so the
-// name (which may contain spaces) is everything before it and the size is what follows.
+// pack_index.txt lists one pack per line: "<name>.pack <size-in-bytes>". We only need the name: split each
+// line at ".pack" and take everything before it (names may contain spaces). Offer a pack only if the player
+// doesn't already have a file by that name. The size after the name is ignored - it used to drive a "newer
+// version available" re-offer, but that re-listed already-downloaded packs whenever a local copy wasn't
+// byte-identical to the indexed one, so it was dropped.
 string[] lines=string_split(result,"\n",false);
 string[] actualpacks;
 for (uint i=0;i<lines.length();i++) {
@@ -1941,10 +1946,8 @@ int p=string_contains(line,".pack",1);
 if (p==-1) continue;
 string name=string_left(line,p);
 if (name=="") continue;
-string sizestr=string_replace(string_trim_left(line,p+5)," ","",true);
 string local=path+"data/packs/"+name+".pack";
 if (!file_exists(local)) actualpacks.insert_last(name);
-else if (file_size(local)!=string_to_number(sizestr)) actualpacks.insert_last(name);
 }
 if (actualpacks.length()==0) {
 if (lang==1) rd.say("There are no more packs to download! Why don't you make one?");
@@ -1987,7 +1990,7 @@ return;
 else {
 while (dl.is_active()) {
 dl.monitor();
-if (dl.get_percentage()>=percent+1) {
+if (dl.get_percentage()>=percent+2) {
 beep_percentage(dl.get_percentage());
 percent=dl.get_percentage();
 }//if bigger
@@ -2009,9 +2012,3 @@ wait(5);
 start();
 return;
 }
-double file_size(string filename) {
-file s;
-bool suc=s.open(filename,"rb");
-if (!suc) return -1;
-return s.size;
-}	

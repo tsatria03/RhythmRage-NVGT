@@ -436,12 +436,12 @@ def do_package():
     ok_mac = _zip_mac()
     return ok_win and ok_mac
 
-# ── Pack index (packinfo.txt for the downloader) ────────────────────────────────
+# ── Pack index (pack_index.txt for the downloader) ────────────────────────────────
 
 def do_packindex():
-    # The in-game pack downloader (getpacks) fetches packinfo.txt from the pack-server ROOT and reads one line
+    # The in-game pack downloader (getpacks) fetches pack_index.txt from the pack-server ROOT and reads one line
     # per pack: "<name>.pack <size-in-bytes>". This scans the built .pack files in rg/data/packs and writes the
-    # index to the rg/ root, mirroring the VPS layout: packinfo.txt at RhythmRage/ (root), packs at RhythmRage/packs/.
+    # index to the rg/ root, mirroring the VPS layout: pack_index.txt at RhythmRage/ (root), packs at RhythmRage/packs/.
     packs_dir = os.path.join(RG_DIR, "data", "packs")
     if not os.path.isdir(packs_dir):
         print(f"ERROR: packs folder not found at {packs_dir}.")
@@ -452,13 +452,13 @@ def do_packindex():
         print(f"No .pack files found in {packs_dir} to index.")
         return False
     lines = [f"{name} {os.path.getsize(os.path.join(packs_dir, name))}" for name in packs]
-    out_path = os.path.join(RG_DIR, "packinfo.txt")
+    out_path = os.path.join(RG_DIR, "pack_index.txt")
     with open(out_path, "w", newline="\n") as f:
         f.write("\n".join(lines) + "\n")
     print(f"Wrote {out_path} with {len(lines)} pack(s):")
     for l in lines:
         print("  " + l)
-    print("\nUpload packinfo.txt to RhythmRage/ (root) and the .pack files to RhythmRage/packs/ on the VPS.")
+    print("\nUpload pack_index.txt to RhythmRage/ (root) and the .pack files to RhythmRage/packs/ on the VPS.")
     return True
 
 # ── Release (tag + GitHub release) ──────────────────────────────────────────────
@@ -538,7 +538,7 @@ def menu():
         print(" --- Build ---")
         print(" 6. Compile (Windows + Mac)")
         print(" 7. Package (Windows + Mac zip)")
-        print(" 8. Generate pack index (packinfo.txt for the downloader)")
+        print(" 8. Generate pack index (pack_index.txt for the downloader)")
         print(" --- Release ---")
         print(" 9. Release (tag + GitHub release)")
         print(" 10. Full release (compile + package + release)")
