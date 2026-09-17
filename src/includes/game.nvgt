@@ -1987,8 +1987,8 @@ return;
 else {
 while (dl.is_active()) {
 dl.monitor();
-if (dl.get_percentage()>=percent+2) {
-rd.say(dl.get_percentage()+"%");
+if (dl.get_percentage()>=percent+1) {
+beep_percentage(dl.get_percentage());
 percent=dl.get_percentage();
 }//if bigger
 if (key_pressed(KEY_ESCAPE)) {
