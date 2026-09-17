@@ -109,11 +109,6 @@ return;
 if (o=="esc") {
 select.play();
 fade(music);
-int donation=random(1,7);
-if (donation==7 and SCRIPT_COMPILED) {
-if (lang==1) alert("Hello!","If you enjoy this game, please do consider making a donation at http://www.oriolgomez.com and/or subscribing to our mailing list at: oriolgomez+subscribe@groups.io. Your contributions and/or encouragement messages are greatly appreciated! As a donator, you will receive the rhythm rage extra content package which includes the perfect versions for all songs and the original music without sounds.");
-if (lang==2) alert("hola!","Si te gusta este juego, por favor considera hacer una pequeña donación a http://www.oriolgomez.com y/o suscríbete a nuestra lista de correo, radiolavila+subscribe@groups.io. Tus contribuciones y/o mensajes de apoyo son de mucho agrado! Si haces una donación, recibirás como extra el paquete de contenidos extra que incluye todas las versiones de las músicas del juego en perfecto así como la música original.");
-}
 exit();
 return;
 }

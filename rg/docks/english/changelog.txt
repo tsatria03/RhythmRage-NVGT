@@ -1,4 +1,5 @@
 ﻿New in 1.2.
+While playing a level, you can now raise or lower its background music with the page up and page down keys.
 You can now restart the game from the main menu.
 The pack downloader no longer lists packs you have already downloaded.
 While a pack downloads, its progress is now played as a rising beep instead of a spoken percentage.
