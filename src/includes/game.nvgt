@@ -58,7 +58,14 @@ if (data.exists("keycal"))
 data.get("keycal",keycal);
 if (data.exists("menuvol"))
 data.get("menuvol",menuvol);
-if (data.exists("unlocks")) 
+// Restore the pack the player last had open. Skip while creatingpack, because generate_packs() (which runs
+// before deser) has already selected the loose test folder and we must not overwrite it. Fall back to the
+// default pack if the saved one no longer exists, so a deleted pack can't trigger the pack-error exit.
+if (!creatingpack && data.exists("pack")) {
+data.get("pack",pack);
+if (!file_exists(path+"packs/"+pack+".pack")) pack="default";
+}
+if (data.exists("unlocks"))
 data.get("unlocks",unlocks);
 if (unlocks=="") unlocks+="default.pack,";
 string[] levels=string_split(unlocks,".pack,",true);
