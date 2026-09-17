@@ -161,7 +161,7 @@ sl="speaker_"+lang+"_";
 vo.prepend=sl+"num_";
 vo.include_and=(lang==2);
 vo.append="";
-set_sound_storage(path+"sounds"+lang+".pack");
+set_sound_storage(path+"data/assets/sounds"+lang+".pack");
 lockerror.load("lock_error");
 oklevel.load("oklevel");
 faillevel.load("faillevel");
@@ -186,11 +186,12 @@ if (installed) path=DIRECTORY_APPDATA+"/Oriol Gomez/rg/";
 // Run from source: NVGT auto_chdir sets the working directory to this script's folder
 // (src/), while the game's data lives in the sibling rg/ folder, so reach it via ../rg/.
 if (!installed and !SCRIPT_COMPILED) path="../rg/";
-directory_create(path+"packs");
-// Portable save: the profile lives in data/saves next to the game (path+"data/saves"), so the whole
-// folder can be moved between computers. path resolves to the exe's folder when portable, ../rg/ from
-// source, and the appdata rg/ folder when installed.
+// All game data lives under data/: assets/ (engine sound packs), packs/ (rhythm packs), saves/ (the
+// portable profile). path resolves to the exe's folder when portable, ../rg/ from source, and the appdata
+// rg/ folder when installed - so the whole folder can be moved between computers with progress intact.
 directory_create(path+"data");
+directory_create(path+"data/assets");
+directory_create(path+"data/packs");
 directory_create(path+"data/saves");
 if (screen_reader_is_running(1)) install_keyhook();
 generate_packs();
@@ -210,6 +211,6 @@ generate_soundpack();
 }
 if (com=="") playintro("logo"+lang,false);
 yespack();
-package.open(path+"packs/"+pack+".pack");
+package.open(path+"data/packs/"+pack+".pack");
 start();
 }

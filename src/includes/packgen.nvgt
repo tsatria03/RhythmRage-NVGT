@@ -3,7 +3,7 @@ void generate_soundpack() {
 	if (files.length()==0) {
 				}
 	else {
-package.create(path+"sounds"+lang+".pack");
+package.create(path+"data/assets/sounds"+lang+".pack");
 		for(uint counter=0; counter<files.length(); counter++)
 		{
 			if (string_contains(files[counter],"speaker_",1)!=-1) {
@@ -22,7 +22,7 @@ package.add_file(path+"sounds/"+files[counter],string_left(files[counter], files
 }
 void generate_packs() {
 pack_file package;
-string[] packs=find_directories(path+"packs/*");
+string[] packs=find_directories(path+"data/packs/*");
 if (packs.length()>1) {
 if (lang==1) alert("Multiple packs","There are multiple folders inside the packs folder. You can only work on one pack at a time.");
 if (lang==2) alert("paquetes múltiples", "solo se puede trabajar con un paquete a la vez. Tienes más de una carpeta en la carpeta packs.");
@@ -32,9 +32,9 @@ if (packs.length()==0) {
 return;
 }
 pack=packs[0];
-package.create(path+"packs/"+packs[0]+".pack");
+package.create(path+"data/packs/"+packs[0]+".pack");
 creatingpack=true;
-string[] files=find_files(path+"packs/"+packs[0]+"/*");
+string[] files=find_files(path+"data/packs/"+packs[0]+"/*");
 if (files.length()==0) {
 if (lang==1) alert("error","error packing the files in your new pack.");
 if (lang==2) alert("error","Hay un error con los archivos de tu nuevo paquete de sonidos.");
@@ -48,7 +48,7 @@ for(uint counter=0; counter<files.length(); counter++)
 // unordered_map keyed by exact filename) always matches the all-lowercase names the level scripts use.
 // This prevents case-slip bugs like uppercase letter files (A.ogg) not matching a lowercase "a" reference.
 if (string_contains(files[counter],".ogg",1)!=-1) {
-bool encr=file_encrypt(path+"packs/"+packs[0]+"/"+files[counter],"encdata",packs[0]+"guillemandoriolftw");
+bool encr=file_encrypt(path+"data/packs/"+packs[0]+"/"+files[counter],"encdata",packs[0]+"guillemandoriolftw");
 if (!encr) {
 alert("encrypt error","error!"+files[counter]);
 pack="default";
@@ -62,7 +62,7 @@ exit();
 }//adding
 }//ogg
 else {
-bool adding=package.add_file(path+"packs/"+packs[0]+"/"+files[counter],string_to_lower_case(files[counter]));
+bool adding=package.add_file(path+"data/packs/"+packs[0]+"/"+files[counter],string_to_lower_case(files[counter]));
 if (!adding) {
 alert("error",files[counter]);
 exit();

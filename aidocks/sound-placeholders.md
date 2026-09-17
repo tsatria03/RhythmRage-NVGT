@@ -17,7 +17,7 @@ When the dev asks for a feature to play a sound, **add the sound-playing code im
 How sounds are played in this codebase (match these patterns):
 - **From the active pack:** most game audio loads by bare name from the currently open `pack_file` (`music.load("newlevel")`, `levjing.load(perfectjng)`) after `yespack()` sets storage/decryption. Pack sounds are referenced WITHOUT the `.ogg` extension and WITHOUT a path — the pack build strips both.
 - **UI/one-shot sounds:** `pool.play_stationary("<name>", false)` via the global `sound_pool pool`.
-- **Engine sound pack (voice/UI):** `nopack()` switches storage to `path+"sounds<lang>.pack"` (i.e. `rg/sounds<lang>.pack`) before loading built-in speaker/UI sounds; call `yespack()` again afterward. See [[rhythm-rage-bgt-to-nvgt-port]] for the nopack/yespack storage-switching model.
+- **Engine sound pack (voice/UI):** `nopack()` switches storage to `path+"data/assets/sounds<lang>.pack"` (i.e. `rg/data/assets/sounds<lang>.pack`) before loading built-in speaker/UI sounds; call `yespack()` again afterward. See [[rhythm-rage-bgt-to-nvgt-port]] for the nopack/yespack storage-switching model.
 
 **Why:** the dev designs features first and sources the "perfect" sound later; blocking on the asset (or faking one) just slows iteration.
 

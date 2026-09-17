@@ -23,12 +23,11 @@ SRC_DIR      = os.path.join(REPO_DIR, "src")    # the .nvgt source lives here
 # --- Compile / package / release ---
 NVGT2     = r"C:\nvgt2\nvgt2.exe"                 # miniaudio NVGT compiler this game uses
 RG_DIR    = os.path.join(REPO_DIR, "rg")          # the game's data folder
-# Copied from rg/ into every build. docks/ now holds all the player-facing docs (english/ + spanish/ subfolders,
-# including the level-tool parser reference), so copying the folder ships them all. data/ ships so the portable
-# save folder (data/saves/) exists next to the game, but the actual rg.dat save is excluded (see SHIP_IGNORE) so
-# the dev's own profile isn't distributed. NOT: mypacks/ (authoring), sounds/ (raw source), *.py launchers, or
-# lib (the bundler already supplies the correct per-platform libraries).
-SHIP      = ["data", "docks", "packs", "sounds1.pack", "sounds2.pack"]
+# Copied from rg/ into every build. data/ holds all runtime game data - assets/ (engine sound packs), packs/
+# (the compiled rhythm packs) and saves/ (the portable profile, minus rg.dat via SHIP_IGNORE) - so shipping the
+# folder covers them all. docks/ holds the player-facing docs (english/ + spanish/). NOT: mypacks/ (authoring),
+# sounds/ (raw sound source, built into data/assets), *.py launchers, or lib (the bundler supplies platform libs).
+SHIP      = ["data", "docks"]
 # Filenames never copied into a build (matched at every level of a shipped folder): the dev's own save. The
 # empty data/saves/ folder itself still ships (copytree recreates the directory), just without rg.dat inside.
 SHIP_IGNORE = shutil.ignore_patterns("rg.dat")
@@ -441,9 +440,9 @@ def do_package():
 
 def do_packindex():
     # The in-game pack downloader (getpacks) fetches packinfo.txt from the pack-server ROOT and reads one line
-    # per pack: "<name>.pack <size-in-bytes>". This scans the built .pack files in rg/packs and writes the index
-    # to the rg/ root, mirroring the VPS layout: packinfo.txt at RhythmRage/ (root), packs at RhythmRage/packs/.
-    packs_dir = os.path.join(RG_DIR, "packs")
+    # per pack: "<name>.pack <size-in-bytes>". This scans the built .pack files in rg/data/packs and writes the
+    # index to the rg/ root, mirroring the VPS layout: packinfo.txt at RhythmRage/ (root), packs at RhythmRage/packs/.
+    packs_dir = os.path.join(RG_DIR, "data", "packs")
     if not os.path.isdir(packs_dir):
         print(f"ERROR: packs folder not found at {packs_dir}.")
         return False

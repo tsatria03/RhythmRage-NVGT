@@ -63,7 +63,7 @@ data.get("menuvol",menuvol);
 // default pack if the saved one no longer exists, so a deleted pack can't trigger the pack-error exit.
 if (!creatingpack && data.exists("pack")) {
 data.get("pack",pack);
-if (!file_exists(path+"packs/"+pack+".pack")) pack="default";
+if (!file_exists(path+"data/packs/"+pack+".pack")) pack="default";
 }
 if (data.exists("unlocks"))
 data.get("unlocks",unlocks);
@@ -101,7 +101,7 @@ return -1;
 // Announce and preview the pack at idx (switch to its encrypted storage, play its name sound, then restore).
 void preview_pack(string[]@ list, int idx) {
 packer.stop();
-set_sound_storage(path+"packs/"+list[idx]);
+set_sound_storage(path+"data/packs/"+list[idx]);
 rd.say(list[idx]);
 string key=string_replace(list[idx],".pack","",true)+"guillemandoriolftw";
 set_sound_decryption_key(key,false);
@@ -123,7 +123,7 @@ if (lang==2) rd.say("Usa las flechas para escoger un paquete y énter para selec
 packnames.resize(0);
 packfiles.resize(0);
 packing=true;
-packfiles=find_files(path+"packs/*.pack");
+packfiles=find_files(path+"data/packs/*.pack");
 unlocksa=string_split(unlocks,",",true);
 for (uint i=0;i<packfiles.length();i++) {
 if (!is_in_array(packfiles[i],unlocksa)) {
@@ -150,7 +150,7 @@ if (lang==1) rd.say("Use the arrow keys to choose a pack, and enter to select it
 if (lang==2) rd.say("Usa las flechas para escoger un paquete y énter para seleccionarlo.");
 packing=true;
 unlocksa=string_split(unlocks,",",true);
-packnames=find_files(path+"packs/*");
+packnames=find_files(path+"data/packs/*");
 string[] temp;
 for (uint i=0;i<packnames.length();i++) {
 if (is_in_array(packnames[i],unlocksa)) {
@@ -190,7 +190,7 @@ if(mpos>=packnames.length()) {
 mpos=0;
 }
 packer.stop();
-set_sound_storage(path+"packs/"+packnames[mpos]);
+set_sound_storage(path+"data/packs/"+packnames[mpos]);
 rd.say(packnames[mpos]);
 string key=string_replace(packnames[mpos],".pack","",true)+"guillemandoriolftw";
 set_sound_decryption_key(key,false);
@@ -205,7 +205,7 @@ if(mpos<0) {
 mpos=packnames.length()-1;
 }
 packer.stop();
-set_sound_storage(path+"packs/"+packnames[mpos]);
+set_sound_storage(path+"data/packs/"+packnames[mpos]);
 rd.say(packnames[mpos]);
 string key=string_replace(packnames[mpos],".pack","",true)+"guillemandoriolftw";
 set_sound_decryption_key(key,false);
@@ -258,7 +258,7 @@ if(mpos>=unlocksa.length()) {
 mpos=0;
 }
 packer.stop();
-set_sound_storage(path+"packs/"+unlocksa[mpos]);
+set_sound_storage(path+"data/packs/"+unlocksa[mpos]);
 rd.say(unlocksa[mpos]);
 string key=string_replace(unlocksa[mpos],".pack","",true)+"guillemandoriolftw";
 set_sound_decryption_key(key,false);
@@ -274,7 +274,7 @@ if(mpos<0) {
 mpos=unlocksa.length()-1;
 }
 packer.stop();
-set_sound_storage(path+"packs/"+unlocksa[mpos]);
+set_sound_storage(path+"data/packs/"+unlocksa[mpos]);
 rd.say(unlocksa[mpos]);
 string key=string_replace(unlocksa[mpos],".pack","",true)+"guillemandoriolftw";
 set_sound_decryption_key(key,false);
@@ -312,7 +312,7 @@ if (music.playing) {
 music.stop();
 played=true;
 }
-bool suc=package.open(path+"packs/"+pack+".pack");
+bool suc=package.open(path+"data/packs/"+pack+".pack");
 if (!suc) {
 alert("error","pack error!");
 exit();
@@ -1942,7 +1942,7 @@ if (p==-1) continue;
 string name=string_left(line,p);
 if (name=="") continue;
 string sizestr=string_replace(string_trim_left(line,p+5)," ","",true);
-string local=path+"packs/"+name+".pack";
+string local=path+"data/packs/"+name+".pack";
 if (!file_exists(local)) actualpacks.insert_last(name);
 else if (file_size(local)!=string_to_number(sizestr)) actualpacks.insert_last(name);
 }
@@ -1978,7 +1978,7 @@ if (idx>=0) { pos=idx; rd.say(actualpacks[pos]); }
 if (key_pressed(KEY_RETURN)) {
 if (lang==1) rd.say("Please wait while the pack is downloaded.");
 if (lang==2) rd.say("Por favor espera mientras descargamos tu pack.");
-dlb=dl.initiate_download(packbase+"packs/"+actualpacks[pos]+".pack",path+"packs/"+actualpacks[pos]+".pack");
+dlb=dl.initiate_download(packbase+"packs/"+actualpacks[pos]+".pack",path+"data/packs/"+actualpacks[pos]+".pack");
 if (!dlb) {
 rd.say("error!");
 start();

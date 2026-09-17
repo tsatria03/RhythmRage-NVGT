@@ -4,7 +4,7 @@
 - [BGT source has two game files](bgt-source-two-game-files.md) — game.bgt (2023, canonical, port basis, free store) vs z.bgt (2016 backup, legacy paid store); don't confuse them
 - [Run and build](rhythm-rage-run-and-build.md) — src/ (scripts) vs rg/ (data) split, rg.py/lt.py launchers, path=../rg/ from source, build/tools.py compile+package into releases/ (Win folder + Mac .app), level tool Windows-only
 - [Commit authorship](commit-authorship.md) — never add Claude as author/co-author on commits
-- [Changelog rules](changelog-rules.md) — docks/changelog.txt: player-facing prose, 1-3 sentence entries, per-version caps (20/.0, 10/minor), reverse-chronological
+- [Changelog rules](changelog-rules.md) — docks/english/changelog.txt: player-facing prose, 1-3 sentence entries, per-version caps (20/.0, 10/minor), reverse-chronological
 - [Confirm before implementing](confirm-before-implementing.md) — treat design discussion as a question; a message ending in ? means respond and wait, don't edit
 - [List modified files](list-modified-files.md) — end every editing turn with a "Files changed:" list, bare filenames only (dev reviews via screen reader)
 - [Ask one question at a time](ask-one-question-at-a-time.md) — when clarifying, surface ONE question per turn and wait; don't batch a numbered list
