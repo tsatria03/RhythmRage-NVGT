@@ -1,4 +1,6 @@
-﻿New in 1.1.
+﻿New in 1.2.
+Your saved game is now kept in a data folder right next to the game, so you can move the whole game folder to another computer and keep your progress.
+New in 1.1.
 The main menu music volume is now remembered between sessions.
 Your keyboard delay setting is now saved, so you no longer have to recalibrate it every time you start the game.
 The game now stops you from opening more than one copy at the same time. This also applies to the level tool program.

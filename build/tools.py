@@ -24,9 +24,14 @@ SRC_DIR      = os.path.join(REPO_DIR, "src")    # the .nvgt source lives here
 NVGT2     = r"C:\nvgt2\nvgt2.exe"                 # miniaudio NVGT compiler this game uses
 RG_DIR    = os.path.join(REPO_DIR, "rg")          # the game's data folder
 # Copied from rg/ into every build. docks/ now holds all the player-facing docs (english/ + spanish/ subfolders,
-# including the level-tool parser reference), so copying the folder ships them all. NOT: mypacks/ (authoring),
-# sounds/ (raw source), *.py launchers, or lib (the bundler already supplies the correct per-platform libraries).
-SHIP      = ["docks", "packs", "sounds1.pack", "sounds2.pack"]
+# including the level-tool parser reference), so copying the folder ships them all. data/ ships so the portable
+# save folder (data/saves/) exists next to the game, but the actual rg.dat save is excluded (see SHIP_IGNORE) so
+# the dev's own profile isn't distributed. NOT: mypacks/ (authoring), sounds/ (raw source), *.py launchers, or
+# lib (the bundler already supplies the correct per-platform libraries).
+SHIP      = ["data", "docks", "packs", "sounds1.pack", "sounds2.pack"]
+# Filenames never copied into a build (matched at every level of a shipped folder): the dev's own save. The
+# empty data/saves/ folder itself still ships (copytree recreates the directory), just without rg.dat inside.
+SHIP_IGNORE = shutil.ignore_patterns("rg.dat")
 # Destination for each platform: the bundle (named after the script) goes inside the existing RhythmRage_<platform> folder.
 WIN_DEST  = os.path.join(REPO_DIR, "releases", "windows", "RhythmRage_windows", NVGT_OUT)          # ...\rg  (folder: rg.exe + lib + data)
 MAC_DEST  = os.path.join(REPO_DIR, "releases", "mac", "RhythmRage_mac", NVGT_OUT + ".app")         # ...\rg.app
@@ -300,7 +305,7 @@ def _copy_ship(asset_dest):
             return False
         dst_item = os.path.join(asset_dest, item)
         if os.path.isdir(src_item):
-            shutil.copytree(src_item, dst_item, dirs_exist_ok=True)
+            shutil.copytree(src_item, dst_item, dirs_exist_ok=True, ignore=SHIP_IGNORE)
         else:
             shutil.copy2(src_item, dst_item)
     return True
@@ -436,13 +441,13 @@ def do_package():
 
 def do_release():
     # Version comes only from build/version.txt (the game code never reads it). Tag keeps the trailing-0 form
-    # (1.1 -> V1.10); the GitHub release is titled V1.1. Attaches the two zips built by Compile (6) + Package (7).
+    # (1.1 -> V1.10); the GitHub release is titled "<GAME> V1.1". Attaches the two zips built by Compile (6) + Package (7).
     version = get_version()
     if not version:
         print("ERROR: could not read build/version.txt.")
         return False
-    tag = f"V{version}0"    # e.g. 1.1 -> V1.10
-    title = f"V{version}"   # e.g. V1.1
+    tag = f"V{version}0"        # e.g. 1.1 -> V1.10
+    title = f"{GAME} V{version}"  # e.g. RhythmRage V1.1
     win_zip = os.path.join(ARCHIVES_DIR, "RhythmRage_windows.zip")
     mac_zip = os.path.join(ARCHIVES_DIR, "RhythmRage_mac.zip")
     assets = [z for z in (win_zip, mac_zip) if os.path.exists(z)]

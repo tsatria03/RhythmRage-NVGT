@@ -187,7 +187,11 @@ if (installed) path=DIRECTORY_APPDATA+"/Oriol Gomez/rg/";
 // (src/), while the game's data lives in the sibling rg/ folder, so reach it via ../rg/.
 if (!installed and !SCRIPT_COMPILED) path="../rg/";
 directory_create(path+"packs");
-directory_create(DIRECTORY_APPDATA+"/Oriol Gomez/rg/saves");
+// Portable save: the profile lives in data/saves next to the game (path+"data/saves"), so the whole
+// folder can be moved between computers. path resolves to the exe's folder when portable, ../rg/ from
+// source, and the appdata rg/ folder when installed.
+directory_create(path+"data");
+directory_create(path+"data/saves");
 if (screen_reader_is_running(1)) install_keyhook();
 generate_packs();
 deser();          // load the saved profile (including the chosen language) before applying language-dependent setup

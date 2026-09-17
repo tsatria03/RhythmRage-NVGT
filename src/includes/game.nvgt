@@ -30,16 +30,16 @@ data.set("achievements",achievements);
 string srld=serialize(data);
 string esrld=string_encrypt(srld,"soyelputoamo");
 file fld;
-fld.open(DIRECTORY_APPDATA+"/Oriol Gomez/rg/saves/rg.dat","wb");
+fld.open(path+"data/saves/rg.dat","wb");
 fld.write(esrld);
 fld.close();
 }
 void deser() {
 cash=0;
 unlocks="default.pack,";
-if(file_exists(DIRECTORY_APPDATA+"/Oriol Gomez/rg/saves/rg.dat")) {
+if(file_exists(path+"data/saves/rg.dat")) {
 file fld;
-fld.open(DIRECTORY_APPDATA+"/Oriol Gomez/rg/saves/rg.dat","rb");
+fld.open(path+"data/saves/rg.dat","rb");
 string dsr=fld.read();
 dsr=string_decrypt(dsr,"soyelputoamo");
 dictionary data=deserialize(dsr);
