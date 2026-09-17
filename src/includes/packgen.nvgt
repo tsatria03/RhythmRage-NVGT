@@ -44,6 +44,9 @@ exit();
 else {
 for(uint counter=0; counter<files.length(); counter++)
 {
+// Internal pack names are lowercased so the case-sensitive pack lookup (NVGT stores the TOC in an
+// unordered_map keyed by exact filename) always matches the all-lowercase names the level scripts use.
+// This prevents case-slip bugs like uppercase letter files (A.ogg) not matching a lowercase "a" reference.
 if (string_contains(files[counter],".ogg",1)!=-1) {
 bool encr=file_encrypt(path+"packs/"+packs[0]+"/"+files[counter],"encdata",packs[0]+"guillemandoriolftw");
 if (!encr) {
@@ -52,14 +55,14 @@ pack="default";
 exit();
 return;
 }//encr failed
-bool adding=package.add_file("encdata",string_left(files[counter], files[counter].length()-4));
+bool adding=package.add_file("encdata",string_to_lower_case(string_left(files[counter], files[counter].length()-4)));
 if (!adding) {
 alert("error",files[counter]);
 exit();
 }//adding
 }//ogg
 else {
-bool adding=package.add_file(path+"packs/"+packs[0]+"/"+files[counter],files[counter]);
+bool adding=package.add_file(path+"packs/"+packs[0]+"/"+files[counter],string_to_lower_case(files[counter]));
 if (!adding) {
 alert("error",files[counter]);
 exit();
