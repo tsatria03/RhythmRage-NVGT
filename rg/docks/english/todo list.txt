@@ -1,6 +1,5 @@
 ####These are the things that need to be finished for future versions of the game.
 
-****Unfinished.  Fix the pack downloader so it can actually retrieve uploaded packs from the server.
 ****Unfinished.  Add a confirmation before exiting from the main menu so you don't quit by accident.
 ****Unfinished.  Announce how many levels you've completed out of the total when you open a pack.
 ****Unfinished.  Make the level select menu remember where you were so it doesn't open at the top every time.
@@ -8,6 +7,7 @@
 
 ##These are the things that are already finished from earlier versions of the game.
 
+**Ffinished.  Fix the pack downloader so it can actually retrieve uploaded packs from the server.
 **Finished.  Make it so you can't run the game more than once.
 **Finished.  Fix the interactive tutorials not working propperly.
 **Finished.  Show the level name next to the locked status wen viewing levels in the level select menu.

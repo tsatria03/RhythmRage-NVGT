@@ -40,6 +40,14 @@ wait(5);
 }
 exit();
 }
+// Relaunch the game, then quit this copy. SCRIPT_EXECUTABLE is whatever launched us, so this reruns the
+// compiled rg.exe when compiled, or the nvgt2 engine on rg.nvgt from source (cwd is src/ there). Using it
+// keeps us on the same engine (nvgt2) with no hardcoded path.
+void restart() {
+if (SCRIPT_COMPILED) run(SCRIPT_EXECUTABLE,"",false,false);
+else run(SCRIPT_EXECUTABLE,"rg.nvgt",false,false);
+exit();
+}
 void fade(sound@ handle) {
 int oldvol=handle.volume;
 while (handle.volume>=oldvol-50) {

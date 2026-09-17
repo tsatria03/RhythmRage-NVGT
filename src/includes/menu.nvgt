@@ -56,6 +56,7 @@ menu.ats("change language (current language is "+(lang==1?"English":"Spanish")+"
 menu.ats("keyboard delay settings for virtual machines (current delay is "+keycal+"ms)","configurar retraso del teclado para máquinas virtuales (retraso actual es de "+keycal+"ms)","calkey");
 menu.ats("achievements","logros","ach");
 menu.ats("delete all achievements","borrar todos tus logros","achclear");
+menu.ats("restart","reiniciar","restart");
 menu.ats("exit","salir","esc");
 string o;
 if (lang==2) o=menu.run_extended("Bienvenido! Usa las flechas para seleccionar una opción y pulsa énter. Usa las teclas avanzar y retroceder página para cambiar el volumen de la música",true,"esc",true);
@@ -98,6 +99,12 @@ if (o=="change") {
 select.play();
 fade(music);
 packchange();
+}
+if (o=="restart") {
+select.play();
+fade(music);
+restart();
+return;
 }
 if (o=="esc") {
 select.play();
