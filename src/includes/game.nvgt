@@ -438,7 +438,9 @@ return pr;
 string tutorial_pause_here() {
 return tutorial_pause(tutem);
 }
-// End the tutorial and drop straight into a normal playthrough of the actual level (choice screen skipped).
+// End the tutorial and drop straight into a normal playthrough of the actual level. replaying skips the
+// choice screen; restarted skips the achievements prompt and start jingle, just like a pause-menu restart, so
+// skipping a tutorial lands you right in the level.
 void skip_tutorial() {
 skiptut=false;
 quittut=false;
@@ -447,6 +449,7 @@ tut_mus.stop();
 pool.destroy_all();
 tutorial=false;
 replaying=true;
+restarted=true;
 startlev(olv);
 }
 // Leave the tutorial entirely and return to the level select screen.
