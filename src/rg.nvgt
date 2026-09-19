@@ -20,6 +20,7 @@ bool enhanced=true;
 int tut_right=0,tut_wrong=0,tut_start=0,tut_finish=0,tut_max=0;
 bool musiconly;
 bool perfectrun=false;
+bool replaying=false;   // set by the pause menu's restart, so startlev skips the choice screen and replays the level
 double keycal=0;
 int menuvol=-10;   // main-menu music volume, persisted in rg.dat and adjusted with page up/down
 double timewindow;

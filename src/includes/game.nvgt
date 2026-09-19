@@ -415,8 +415,8 @@ if (tutorial) pmenu.ats("skip tutorial","saltar el tutorial","skip");
 if (!tutorial) pmenu.ats("restart","reiniciar","restart");
 pmenu.ats("quit","salir","quit");
 string o;
-if (lang==1) o=pmenu.run_extended("Paused.",true,"resume",true);
-if (lang==2) o=pmenu.run_extended("Pausa.",true,"resume",true);
+if (lang==1) o=pmenu.run_extended("pause menu",true,"resume",true);
+if (lang==2) o=pmenu.run_extended("menú de pausa",true,"resume",true);
 if (o=="esc") o="resume";
 return o;
 }
@@ -490,9 +490,18 @@ if (keys[0]==KEY_END && creatingpack) {
 rd.say(music.position);
 }
 else if (keys[0]==KEY_ESCAPE) {
-// Pause the level and open the pause menu. Freeze everything gameplay was sounding: the backing music, the
-// shared sound pool (play/type-1 actions) and every action's own pool (type-2 tap-and-hold). Phase 1: resume
-// and quit are wired; restart is a placeholder that just resumes for now.
+if (perfectrun or musiconly) {
+// Perfect run and soundtrack are passive listen modes with nothing to pause, so escape just leaves the level
+// and returns to the level select screen, silencing anything still playing.
+music.stop();
+pool.destroy_all();
+for (uint i=0;i<actions.length();i++) actions[i].apool.destroy_all();
+if (creatingpack and com!="") exit();
+else startgame(1);
+}
+else {
+// A real playthrough: pause and open the pause menu. Freeze everything gameplay was sounding - the backing
+// music, the shared sound pool (play/type-1 actions) and every action's own pool (type-2 tap-and-hold).
 music.pause();
 pool.pause_all();
 for (uint i=0;i<actions.length();i++) actions[i].apool.pause_all();
@@ -509,12 +518,23 @@ for (uint i=0;i<actions.length();i++) actions[i].apool.destroy_all();
 if (creatingpack and com!="") exit();
 else startgame(1);
 }
+else if (pr=="restart") {
+// Replay the current level from the top. Stop everything first, then re-parse via startlev (actions/sounds
+// get consumed during play, so we can't reuse them), and set replaying so startlev skips the choice screen.
+music.stop();
+pool.destroy_all();
+for (uint i=0;i<actions.length();i++) actions[i].apool.destroy_all();
+replaying=true;
+startlev(olv);
+return;
+}
 else {
-// resume, or a not-yet-wired item: unfreeze and carry on playing from where we paused.
+// resume: unfreeze and carry on playing from where we paused.
 music.play();
 pool.resume_all();
 for (uint i=0;i<actions.length();i++) actions[i].apool.resume_all();
 if (cooldown) cooler.resume();
+}
 }
 }
 if (iskey(keys[0]) && lasta!=100000000 and keys_down().length()==1) {
@@ -793,7 +813,14 @@ choice.ats("You can listen to the soundtrack only when you get a perfect","solo 
 }
 string r;
 if (com!="") {question_state=0;}
-if (debugl=="") {
+if (replaying) {
+// Restarting the current level from the pause menu: skip the tutorial/play choice screen and go straight to a
+// normal playthrough.
+replaying=false;
+r="play";
+question_state=2;
+}
+else if (debugl=="") {
 if (com=="") r=choice.run_extended(inst,true,"esc",true);
 if (r=="tut") question_state=1;
 if (r=="play") question_state=2;
