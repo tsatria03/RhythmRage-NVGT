@@ -773,10 +773,14 @@ message+=". Pitty, you failed something important in this level... This will not
 }
 rd.say(message);
 wait(600);
+// The result jingle is really pack music, so page up/down can raise or lower it while it plays, just like the
+// level's backing music. Its volume is independent of the level music and isn't saved between results.
 levjing.play();
 okval=val;
 tinfo.restart();
 while (!key_pressed(KEY_RETURN) and !key_pressed(KEY_ESCAPE)) {
+if (key_repeating(KEY_NEXT)) levjing.volume=levjing.volume-3;
+if (key_repeating(KEY_PRIOR)) levjing.volume=levjing.volume+3;
 if (tinfo.elapsed>=10000) {
 tinfo.restart();
 rd.say(message);
