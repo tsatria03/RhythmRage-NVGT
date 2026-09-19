@@ -39,7 +39,7 @@ bool alreadyplayed;
 string lname;
 sound lockerror;
 string mp;
-string levpos="";   // last-focused item in the level select browser, so it reopens where you left off this session
+string levpos="";   // last-focused item in the level select browser, persisted in rg.dat so it reopens where you left off
 bool skipleveljingle=false;   // suppress only the status jingle (not the spoken status) on the first focus after reopening
 bool ok;
 int curlev;

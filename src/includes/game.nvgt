@@ -8,6 +8,7 @@ data.set("cash",cash);
 data.set("lang",lang);
 data.set("keycal",keycal);
 data.set("menuvol",menuvol);
+data.set("levpos",levpos);
 data.set("unlocks",unlocks);
 data.set("pack",pack);
 //save unlocks here
@@ -58,6 +59,8 @@ if (data.exists("keycal"))
 data.get("keycal",keycal);
 if (data.exists("menuvol"))
 data.get("menuvol",menuvol);
+if (data.exists("levpos"))
+data.get("levpos",levpos);
 // Restore the pack the player last had open. Skip while creatingpack, because generate_packs() (which runs
 // before deser) has already selected the loose test folder and we must not overwrite it. Fall back to the
 // default pack if the saved one no longer exists, so a deleted pack can't trigger the pack-error exit.
@@ -399,6 +402,24 @@ achs.load("newach");
 }
 if (played) music.play_looped();
 }
+// The in-level pause menu. Items adapt to the context: "skip tutorial" only while a tutorial is playing,
+// "restart" only during an actual level. Resume is focused first, and escape out of this menu also resumes.
+// Menu UI sounds (menu_move) come from the current game pack, which is already the active storage in a level.
+// The caller is responsible for pausing/resuming the right audio around this call.
+string pause_menu() {
+enhanced_menu pmenu;
+pmenu.set_speech_mode(rd.reader_mode);
+pmenu.move_path="menu_move";
+pmenu.ats("resume","reanudar","resume");
+if (tutorial) pmenu.ats("skip tutorial","saltar el tutorial","skip");
+if (!tutorial) pmenu.ats("restart","reiniciar","restart");
+pmenu.ats("quit","salir","quit");
+string o;
+if (lang==1) o=pmenu.run_extended("Paused.",true,"resume",true);
+if (lang==2) o=pmenu.run_extended("Pausa.",true,"resume",true);
+if (o=="esc") o="resume";
+return o;
+}
 void loadlev(string name,int volume) {
 perfect=true;
 if (tutorial) {
@@ -469,13 +490,32 @@ if (keys[0]==KEY_END && creatingpack) {
 rd.say(music.position);
 }
 else if (keys[0]==KEY_ESCAPE) {
-// Silence everything the level was playing before leaving: the music, the shared sound pool (play/type-1
-// actions) and every action's own pool (type-2 tap-and-hold), so nothing keeps sounding after escape.
+// Pause the level and open the pause menu. Freeze everything gameplay was sounding: the backing music, the
+// shared sound pool (play/type-1 actions) and every action's own pool (type-2 tap-and-hold). Phase 1: resume
+// and quit are wired; restart is a placeholder that just resumes for now.
+music.pause();
+pool.pause_all();
+for (uint i=0;i<actions.length();i++) actions[i].apool.pause_all();
+// Note timing rides on music.position, which is frozen by music.pause(), so hits stay aligned. The only
+// wall-clock timer is cooler (the misc cooldown= gate); freeze it too, but only while a cooldown is actually
+// running - otherwise it is already paused and must stay that way.
+if (cooldown) cooler.pause();
+string pr=pause_menu();
+if (pr=="quit") {
+// Silence everything the level was playing before leaving so nothing keeps sounding after escape.
 music.stop();
 pool.destroy_all();
 for (uint i=0;i<actions.length();i++) actions[i].apool.destroy_all();
 if (creatingpack and com!="") exit();
 else startgame(1);
+}
+else {
+// resume, or a not-yet-wired item: unfreeze and carry on playing from where we paused.
+music.play();
+pool.resume_all();
+for (uint i=0;i<actions.length();i++) actions[i].apool.resume_all();
+if (cooldown) cooler.resume();
+}
 }
 if (iskey(keys[0]) && lasta!=100000000 and keys_down().length()==1) {
 if (!cooldown) {
