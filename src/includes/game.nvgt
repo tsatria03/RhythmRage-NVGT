@@ -247,14 +247,6 @@ packing=false;
 start();
 return;
 }
-if (key_pressed(KEY_TAB)) {
-nopack();
-vo.speak(cash);
-while (vo.speak_next()==1) {
-packloop2();
-wait(5);
-}
-}
 if(key_repeating(KEY_DOWN) or key_repeating(KEY_RIGHT)) {
 mpos+=1;
 if(mpos>=unlocksa.length()) {

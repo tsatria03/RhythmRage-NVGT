@@ -1,4 +1,5 @@
 ﻿New in 1.3.
+In the main menu, you can now press tab to hear which pack you are currently playing.
 The music that plays after you finish a level can now be turned up or down with page up and page down.
 In the level select screen, you can now press tab to hear how many of the pack's levels you have completed out of the total.
 Pressing escape in the main menu now asks you to confirm before quitting so you don't exit by accident, while the exit menu item still quits right away.

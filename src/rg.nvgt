@@ -106,6 +106,10 @@ pack_file package;
 string menu2(enhanced_menu@ lmenu, string data) {
 if (key_repeating(KEY_NEXT)) { music.volume=music.volume-3; menuvol=music.volume; ser(); }
 if (key_repeating(KEY_PRIOR)) { music.volume=music.volume+3; menuvol=music.volume; ser(); }
+if (key_pressed(KEY_TAB)) {
+if (lang==1) rd.say("You're playing "+pack+".pack");
+if (lang==2) rd.say("Estás jugando "+pack+".pack");
+}
 return "";
 }
 string checkmenu(enhanced_menu@ lmenu, string data) {
