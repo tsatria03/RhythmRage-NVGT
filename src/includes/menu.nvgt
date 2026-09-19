@@ -35,7 +35,7 @@ menu.move_path="menu_move";
 menu.set_speech_mode(rd.reader_mode);
 menu.ats("level select","jugar nivel","s");
 unlocksa=string_split(unlocks,",",true);
-packnames=find_files(path+"data/packs/*");
+packnames=find_files(packdir+"*");
 string[] temp;
 for (uint i=0;i<packnames.length();i++) {
 if (is_in_array(packnames[i],unlocksa)) {
@@ -50,6 +50,7 @@ unlocksa=temp;
 if (unlocksa.length()!=1) {
 menu.ats("change pack","cambiar paquete","change");
 }
+menu.ats("compile a pack","compilar un pack","compilepack");
 menu.ats("store (current credits "+cash+")","tienda (créditos ahora "+cash+")","store");
 menu.ats("download new packs","descargar nuevos packs","getpacks");
 menu.ats("change language (current language is "+(lang==1?"English":"Spanish")+")","cambiar idioma (idioma actual: "+(lang==1?"inglés":"español")+")","lang");
@@ -74,6 +75,11 @@ fade(music);
 achclear();
 }
 
+if (o=="compilepack") {
+select.play();
+fade(music);
+compilepacks();
+}
 if (o=="store") {
 select.play();
 fade(music);

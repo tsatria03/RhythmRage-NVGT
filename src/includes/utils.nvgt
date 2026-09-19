@@ -188,9 +188,9 @@ void nopack() {
 set_sound_storage(path+"data/assets/sounds"+lang+".pack");
 }
 void yespack() {
-set_sound_storage(path+"data/packs/"+pack+".pack");
+set_sound_storage(packdir+pack+".pack");
 set_sound_decryption_key(pack+"guillemandoriolftw",false);
-package.open(path+"data/packs/"+pack+".pack");
+package.open(packdir+pack+".pack");
 }
 string get_line(string filename,int number) {
 datastream@ f;

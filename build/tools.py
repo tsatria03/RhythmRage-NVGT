@@ -23,29 +23,20 @@ SRC_DIR      = os.path.join(REPO_DIR, "src")    # the .nvgt source lives here
 # --- Compile / package / release ---
 NVGT2     = r"C:\nvgt2\nvgt2.exe"                 # miniaudio NVGT compiler this game uses
 RG_DIR    = os.path.join(REPO_DIR, "rg")          # the game's data folder
-# Copied from rg/ into every build. data/ holds all runtime game data - assets/ (engine sound packs), packs/
-# (the compiled rhythm packs) and saves/ (the portable profile) - so shipping the folder covers them all.
-# _ship_ignore (below) trims it down: it drops rg.dat, and in data/packs ships only the default packs
-# (English + Spanish; players download the rest in-game). docks/ holds the player-facing docs. NOT: mypacks/
-# (authoring), sounds/ (raw sound source, built into data/assets), *.py launchers, or lib (bundler-supplied).
+# Packs live in the player's app data (…\Oriol Gomez\RhythmRage\packs), not in the build. The pack-index
+# generator reads pack names from here.
+APPDATA_PACKS = os.path.join(os.environ.get("APPDATA", ""), "Oriol Gomez", "RhythmRage", "packs")
+# Copied from rg/ into every build. data/ holds runtime game data - assets/ (engine sound packs) and saves/
+# (the portable profile). docks/ holds the player-facing docs. NOT: mypacks/ (authoring), sounds/ (raw sound
+# source, built into data/assets), *.py launchers, or lib (bundler-supplied). Packs are NOT shipped here - the
+# game keeps its packs in an app-data folder and gets them there separately.
 SHIP      = ["data", "docks"]
-# The default packs shipped with every build (the game is multilingual, so both the English and Spanish
-# default packs ship). All OTHER packs are downloaded in-game. Lowercase for case-insensitive matching.
-SHIP_DEFAULT_PACKS = ("default.pack", "default_espanol.pack")
 
-# copytree ignore callback for _copy_ship. Applied to every directory it copies:
-#   - Always drops rg.dat (the dev's save) and any .gitkeep, anywhere.
-#   - Inside data/packs, drops every .pack EXCEPT the SHIP_DEFAULT_PACKS: the build ships only the default
-#     packs and players download the rest via the in-game downloader. Scoped to data/packs so the sound packs
-#     in data/assets (sounds1.pack/sounds2.pack) are NOT affected - they always ship.
+# copytree ignore callback for _copy_ship: drops rg.dat (the dev's save) and any .gitkeep, anywhere.
 def _ship_ignore(src_dir, names):
-    in_packs = (os.path.basename(src_dir).lower() == "packs"
-                and os.path.basename(os.path.dirname(src_dir)).lower() == "data")
     ignored = set()
     for n in names:
         if n.lower() in ("rg.dat", ".gitkeep"):
-            ignored.add(n)
-        elif in_packs and n.lower().endswith(".pack") and n.lower() not in SHIP_DEFAULT_PACKS:
             ignored.add(n)
     return ignored
 # Destination for each platform: the bundle (named after the script) goes inside the existing RhythmRage_<platform> folder.
@@ -401,7 +392,7 @@ def do_build():
 
 def _zip_windows():
     # Zip the game folder so the archive contains rg/ at its root: extracting RhythmRage_windows.zip
-    # yields an rg/ folder (rg.exe, lt.exe, lib, packs, ...). No exec-bit concerns on Windows.
+    # yields an rg/ folder (rg.exe, lt.exe, lib, data, docks, ...). No exec-bit concerns on Windows.
     if not os.path.isdir(WIN_DEST):
         print(f"ERROR: no Windows build found at {WIN_DEST}. Compile it first (option 6).")
         return False
@@ -457,10 +448,10 @@ def do_package():
 
 def do_packindex():
     # The in-game pack downloader (getpacks) fetches pack_index.txt from the pack-server ROOT and reads one line
-    # per pack: just "<name>.pack" (the game keys on filename only; it no longer uses a size). This scans the
-    # built .pack files in rg/data/packs and writes the index to the rg/ root, mirroring the VPS layout:
+    # per pack: just "<name>.pack" (the game keys on filename only). Packs live in the player's app data now, so
+    # this scans APPDATA_PACKS and writes the index into rg/ for uploading, mirroring the VPS layout:
     # pack_index.txt at RhythmRage/ (root), packs at RhythmRage/packs/.
-    packs_dir = os.path.join(RG_DIR, "data", "packs")
+    packs_dir = APPDATA_PACKS
     if not os.path.isdir(packs_dir):
         print(f"ERROR: packs folder not found at {packs_dir}.")
         return False

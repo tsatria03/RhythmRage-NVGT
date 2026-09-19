@@ -1,6 +1,7 @@
 ####These are the things that need to be finished for future versions of the game.
 
 ****Unfinished.  Make this game translatable to other languages.
+****Unfinished.  Make this game detect the packs and saves folders in either the game folder or app data, falling back to app data when they aren't next to the game.
 
 ##These are the things that are already finished from earlier versions of the game.
 

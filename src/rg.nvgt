@@ -84,6 +84,7 @@ string[] unlocksa;
 string unlocks;
 bool creatingpack=false;
 string pack="default";
+string packdir;   // fixed app-data packs location (…/Oriol Gomez/RhythmRage/packs/); packs live here, not in the portable data folder
 
 bool installed;
 int mode;
@@ -204,13 +205,18 @@ if (installed) path=DIRECTORY_APPDATA+"/Oriol Gomez/rg/";
 // Run from source: NVGT auto_chdir sets the working directory to this script's folder
 // (src/), while the game's data lives in the sibling rg/ folder, so reach it via ../rg/.
 if (!installed and !SCRIPT_COMPILED) path="../rg/";
-// All game data lives under data/: assets/ (engine sound packs), packs/ (rhythm packs), saves/ (the
-// portable profile). path resolves to the exe's folder when portable, ../rg/ from source, and the appdata
-// rg/ folder when installed - so the whole folder can be moved between computers with progress intact.
+// The portable data/ folder holds assets/ (engine sound packs) and saves/ (the profile). path resolves to the
+// exe's folder when portable, ../rg/ from source, and the appdata rg/ folder when installed - so the folder can
+// travel between computers with progress intact. Packs are kept separately in app data (see packdir below).
 directory_create(path+"data");
 directory_create(path+"data/assets");
-directory_create(path+"data/packs");
 directory_create(path+"data/saves");
+// Packs are kept in a fixed app-data location rather than the portable data folder. The store and the
+// downloader write here, so your packs persist independently of where the game folder sits.
+packdir=DIRECTORY_APPDATA+"/Oriol Gomez/RhythmRage/packs/";
+directory_create(DIRECTORY_APPDATA+"/Oriol Gomez");
+directory_create(DIRECTORY_APPDATA+"/Oriol Gomez/RhythmRage");
+directory_create(DIRECTORY_APPDATA+"/Oriol Gomez/RhythmRage/packs");
 if (screen_reader_is_running(1)) install_keyhook();
 generate_packs();
 deser();          // load the saved profile (including the chosen language) before applying language-dependent setup
@@ -229,6 +235,6 @@ generate_soundpack();
 }
 if (com=="") playintro("logo"+lang,false);
 yespack();
-package.open(path+"data/packs/"+pack+".pack");
+package.open(packdir+pack+".pack");
 start();
 }
