@@ -181,7 +181,7 @@ enhanced_menu lmenu;
 lmenu.move_path="menu_move";
 lmenu.set_callback(checkmenu, "");
 lmenu.set_speech_mode(rd.reader_mode);
-int levels=0,locked=0;
+int levels=0,locked=0,completed=0;
 lockedlevels.resize(0);
 string levname;
 string lock;
@@ -189,6 +189,7 @@ if (lang==1) lock="locked";
 if (lang==2) lock="bloqueado";
 for (uint i=0;i<levfiles.length();i++) {
 levname=string_trim_right(levfiles[i],4);
+if (get_level(levname)>=2) completed++;   // completed = passed at ok or better, across every level in the pack
 //lockcheck
 if (get_level(levname)>1 or i==0 or creatingpack) {
 levels++;
@@ -221,8 +222,8 @@ skipleveljingle=(startpos!="esc");
 // reopened browser would speak only the name and skip the status.
 mp="";
 string o;
-if (lang==1) o=lmenu.run_extended("Level select menu: "+levels+" available levels. "+locked+" are locked.",true,startpos,true);
-if (lang==2) o=lmenu.run_extended("Selecciona un nivel: "+levels+" niveles disponibles, y "+locked+" están bloqueados.",true,startpos,true);
+if (lang==1) o=lmenu.run_extended("Level select menu: "+levels+" available levels. "+locked+" are locked. You've completed "+completed+" of "+levfiles.length()+" levels.",true,startpos,true);
+if (lang==2) o=lmenu.run_extended("Selecciona un nivel: "+levels+" niveles disponibles, y "+locked+" están bloqueados. Has completado "+completed+" de "+levfiles.length()+" niveles.",true,startpos,true);
 while (is_in_array(o,lockedlevels)) {
 lockerror.stop();
 lockerror.play();
