@@ -144,7 +144,7 @@ musiconly=false;
 question_state=2;
 if (md==1) {
 music.stream("select_level_music");
-music.volume=-12;
+music.volume=menuvol;
 music.play_looped();
 }
 flist=package.list_files();

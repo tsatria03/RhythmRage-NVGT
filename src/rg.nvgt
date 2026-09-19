@@ -102,8 +102,8 @@ if (key_pressed(KEY_PRIOR)) { music.volume=music.volume+3; menuvol=music.volume;
 return "";
 }
 string checkmenu(enhanced_menu@ lmenu, string data) {
-if (key_pressed(KEY_NEXT)) music.volume=music.volume-3;
-if (key_pressed(KEY_PRIOR)) music.volume=music.volume+3;
+if (key_pressed(KEY_NEXT)) { music.volume=music.volume-3; menuvol=music.volume; ser(); }
+if (key_pressed(KEY_PRIOR)) { music.volume=music.volume+3; menuvol=music.volume; ser(); }
 if (creatingpack) return "";
 string lev;
 if (lmenu.currentItem()!=mp) {
