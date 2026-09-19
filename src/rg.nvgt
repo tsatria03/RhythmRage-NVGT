@@ -44,6 +44,7 @@ string lname;
 sound lockerror;
 string mp;
 string levpos="";   // last-focused item in the level select browser, persisted in rg.dat so it reopens where you left off
+int levcompleted=0,levtotal=0;   // level select progress (passed / total), filled by startgame so checkmenu can announce it on tab
 bool skipleveljingle=false;   // suppress only the status jingle (not the spoken status) on the first focus after reopening
 bool ok;
 int curlev;
@@ -110,6 +111,10 @@ return "";
 string checkmenu(enhanced_menu@ lmenu, string data) {
 if (key_repeating(KEY_NEXT)) { music.volume=music.volume-3; menuvol=music.volume; ser(); }
 if (key_repeating(KEY_PRIOR)) { music.volume=music.volume+3; menuvol=music.volume; ser(); }
+if (key_pressed(KEY_TAB)) {
+if (lang==1) rd.say("You've completed "+levcompleted+" of "+levtotal+" levels.");
+if (lang==2) rd.say("Has completado "+levcompleted+" de "+levtotal+" niveles.");
+}
 if (creatingpack) return "";
 string lev;
 if (lmenu.currentItem()!=mp) {

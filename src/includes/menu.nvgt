@@ -221,9 +221,12 @@ skipleveljingle=(startpos!="esc");
 // by pressing escape mid-level - in that path mp still holds the level we were just on, so without this the
 // reopened browser would speak only the name and skip the status.
 mp="";
+// Expose the completed/total counts so the checkmenu callback can announce them when tab is pressed.
+levcompleted=completed;
+levtotal=levfiles.length();
 string o;
-if (lang==1) o=lmenu.run_extended("Level select menu: "+levels+" available levels. "+locked+" are locked. You've completed "+completed+" of "+levfiles.length()+" levels.",true,startpos,true);
-if (lang==2) o=lmenu.run_extended("Selecciona un nivel: "+levels+" niveles disponibles, y "+locked+" están bloqueados. Has completado "+completed+" de "+levfiles.length()+" niveles.",true,startpos,true);
+if (lang==1) o=lmenu.run_extended("Level select menu: "+levels+" available levels. "+locked+" are locked.",true,startpos,true);
+if (lang==2) o=lmenu.run_extended("Selecciona un nivel: "+levels+" niveles disponibles, y "+locked+" están bloqueados.",true,startpos,true);
 while (is_in_array(o,lockedlevels)) {
 lockerror.stop();
 lockerror.play();
