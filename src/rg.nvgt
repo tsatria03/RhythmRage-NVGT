@@ -234,6 +234,9 @@ if (!SCRIPT_COMPILED && com=="") {
 generate_soundpack();
 }
 if (com=="") playintro("logo"+lang,false);
+// First run with an empty app-data packs folder: download (or, offline, compile) the default packs so there is
+// something to open. Exits with an error if it can't get the default pack any way.
+ensure_default_packs();
 yespack();
 package.open(packdir+pack+".pack");
 start();

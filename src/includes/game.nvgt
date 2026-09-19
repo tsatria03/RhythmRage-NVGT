@@ -2228,3 +2228,56 @@ wait(5);
 start();
 return;
 }
+// Download one pack from the server into the app-data packs folder. Returns true only if the file is actually
+// there afterwards - the downloader deletes it on a non-200 response and initiate_download returns false with no
+// connection - so a false result cleanly means "couldn't get it".
+bool download_pack(string base, string name) {
+// Announce each pack as it starts downloading. Only the launch seeding uses download_pack, so this speech is
+// launch-only (the in-menu downloader has its own flow).
+if (lang==1) rd.say("Downloading "+name+".pack");
+if (lang==2) rd.say("Descargando "+name+".pack");
+downloader dl;
+if (!dl.initiate_download(base+"packs/"+name+".pack",packdir+name+".pack")) return false;
+int percent=0;
+while (dl.is_active()) {
+dl.monitor();
+if (dl.get_percentage()>=percent+2) {
+beep_percentage(dl.get_percentage());
+percent=dl.get_percentage();
+}
+wait(5);
+}
+if (!file_exists(packdir+name+".pack")) return false;
+// A reachable server can still answer with a 200 that isn't the pack (an error/index page, or content the http
+// layer didn't decode), leaving a file that exists but isn't a real pack. Verify it opens as one; if not, delete
+// it and report failure so the compile fallback can take over.
+pack_file test;
+if (!test.open(packdir+name+".pack")) {
+file_delete(packdir+name+".pack");
+return false;
+}
+if (lang==1) rd.say("Download complete.");
+if (lang==2) rd.say("Descarga completa.");
+return true;
+}
+// First-run seeding: when the app-data packs folder is completely empty, get the two default packs there. Try
+// downloading both from the pack server; for anything the download couldn't fetch, fall back to compiling it
+// from its mypacks source folder. If the default pack still isn't available afterwards the game can't run, so
+// alert and exit.
+void ensure_default_packs() {
+if (creatingpack) return;                              // testing a loose pack - leave the defaults alone
+if (find_files(packdir+"*.pack").length()>0) return;   // packs already present, nothing to seed
+string packbase="http://reality-breaker-studios.net/RhythmRage/";
+if (lang==1) rd.say("No packs found. Getting the default packs, please wait.");
+if (lang==2) rd.say("No se encontraron packs. Obteniendo los packs predeterminados, por favor espera.");
+download_pack(packbase,"default");
+download_pack(packbase,"default_espanol");
+// For anything the download didn't get, build it from its mypacks source if that exists.
+if (!file_exists(packdir+"default.pack") and directory_exists(path+"mypacks/default")) compile_one_pack("default");
+if (!file_exists(packdir+"default_espanol.pack") and directory_exists(path+"mypacks/default_espanol")) compile_one_pack("default_espanol");
+if (!file_exists(packdir+"default.pack")) {
+if (lang==1) alert("error","Couldn't download or build the default pack, and there was no internet connection or source files to fall back on. The game can't start.");
+if (lang==2) alert("error","No se pudo descargar ni compilar el pack predeterminado, y no había conexión a internet ni archivos de origen. El juego no puede iniciarse.");
+exit();
+}
+}
