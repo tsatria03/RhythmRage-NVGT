@@ -509,8 +509,8 @@ if (!music.playing) break;
 // Let the player adjust the level's backing-music volume on the fly, like the menus do. Page down softens
 // it (so the action sounds stand out more), page up raises it. These keys aren't gameplay keys, so there's
 // no conflict with the action input below.
-if (key_pressed(KEY_NEXT)) music.volume=music.volume-3;
-if (key_pressed(KEY_PRIOR)) music.volume=music.volume+3;
+if (key_repeating(KEY_NEXT)) music.volume=music.volume-3;
+if (key_repeating(KEY_PRIOR)) music.volume=music.volume+3;
 //do stuff
 if (lasta==100000000 && actions.length()!=0) {
 for (uint i=0;i<actions.length();i++) {

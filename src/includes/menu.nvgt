@@ -57,10 +57,11 @@ menu.ats("keyboard delay settings for virtual machines (current delay is "+keyca
 menu.ats("achievements","logros","ach");
 menu.ats("delete all achievements","borrar todos tus logros","achclear");
 menu.ats("restart","reiniciar","restart");
-menu.ats("exit","salir","esc");
+menu.ats("exit","salir","quit");
 string o;
-if (lang==2) o=menu.run_extended("Bienvenido! Usa las flechas para seleccionar una opción y pulsa énter. Usa las teclas avanzar y retroceder página para cambiar el volumen de la música",true,"esc",true);
-if (lang==1) o=menu.run_extended("Welcome! Use the arrow keys to choose an option, and enter to select it. You can use page up and page down to change the volume of the background music.",true,"esc",true);
+// Open focused on the exit option ("quit").
+if (lang==2) o=menu.run_extended("Bienvenido! Usa las flechas para seleccionar una opción y pulsa énter. Usa las teclas avanzar y retroceder página para cambiar el volumen de la música",true,"quit",true);
+if (lang==1) o=menu.run_extended("Welcome! Use the arrow keys to choose an option, and enter to select it. You can use page up and page down to change the volume of the background music.",true,"quit",true);
 yespack();
 if (o=="ach") {
 select.play();
@@ -106,10 +107,31 @@ fade(music);
 restart();
 return;
 }
-if (o=="esc") {
+if (o=="quit") {
+// The exit menu item quits straight away, no confirmation.
 select.play();
 fade(music);
 exit();
+return;
+}
+if (o=="esc") {
+select.play();
+// Escape in the main menu asks to confirm before quitting so you don't exit by accident. "no" is focused first as the safe default, but
+// escaping the prompt still counts as yes - so a definite yes or an escape both quit, and only choosing "no"
+// cancels. The no item is named "n" (not "esc") so it stays distinct from an actual escape press.
+enhanced_menu confirm;
+confirm.ats("yes","si","y");
+confirm.ats("no!","no!","n");
+confirm.set_speech_mode(rd.reader_mode);
+string q;
+if (lang==1) q=confirm.run_extended("Are you sure you want to exit?",true,"n",true);
+if (lang==2) q=confirm.run_extended("Seguro que quieres salir?",true,"n",true);
+if (q=="y" or q=="esc") {
+fade(music);
+exit();
+return;
+}
+start();
 return;
 }
 if (o=="s") {
