@@ -39,6 +39,8 @@ bool alreadyplayed;
 string lname;
 sound lockerror;
 string mp;
+string levpos="";   // last-focused item in the level select browser, so it reopens where you left off this session
+bool skipleveljingle=false;   // suppress only the status jingle (not the spoken status) on the first focus after reopening
 bool ok;
 int curlev;
 bool perfect=true;
@@ -116,40 +118,43 @@ if (lang==2) rd.say("bloqueado");
 else {
 lev=string_trim_right(mp,4);
 int value=string_to_number(get_level(lev));
+sound@ statussound=null;
 switch(value) {
 case 0:
 if (lang==1) rd.say("You haven't played this level before.");
 if (lang==2) rd.say("No has jugado este nivel");
-newlevel.stop();
-newlevel.play();
+@statussound=newlevel;
 break;
 case 1:
 if (lang==1) rd.say("You played this level and failed.");
 if (lang==2) rd.say("has fallado este nivel");
-faillevel.stop();
-faillevel.play();
+@statussound=faillevel;
 break;
 case 2:
 if (lang==1) rd.say("ok");
 if (lang==2) rd.say("bien");
-oklevel.stop();
-oklevel.play();
+@statussound=oklevel;
 break;
 case 3:
 if (lang==1) rd.say("super");
 if (lang==2) rd.say("súper");
-superlevel.stop();
-superlevel.play();
+@statussound=superlevel;
 break;
 case 4:
 if (lang==1) rd.say("perfect!");
 if (lang==2) rd.say("perfecto!");
-perfectlevel.stop();
-perfectlevel.play();
+@statussound=perfectlevel;
 break;
 }
+// The spoken status above always plays; the jingle is held back only on the first focus after reopening on a
+// remembered level, then plays normally for every later navigation.
+if (@statussound!=null and !skipleveljingle) {
+statussound.stop();
+statussound.play();
 }
 }
+}
+skipleveljingle=false;
 }
 return "";
 }

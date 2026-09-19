@@ -305,6 +305,7 @@ wait(5);
 void load_pack() {
 yespack();
 alreadyplayed=false;
+levpos="";   // new pack, so forget the remembered level select position
 }
 void checkpack() {
 bool played;

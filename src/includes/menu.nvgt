@@ -186,13 +186,25 @@ locked++;
 lmenu.ats("go back","volver","esc");
 if (lang==1) lock="You must unlock the previous levels to proceed.";
 if (lang==2) lock="Debes desbloquear los niveles anteriores para proceder.";
+// Reopen on the level we last had focused this session (set below when a level is chosen), so leaving a
+// level with escape and coming back lands you where you were instead of at the top. Fall back to the go
+// back item when nothing is remembered or the remembered level isn't part of this pack.
+string startpos="esc";
+if (levpos!="" and is_in_array(levpos,levfiles)) startpos=levpos;
+// When we reopen on a remembered level, checkmenu should still announce its status (perfect, super, etc.) but
+// not play the status jingle for that initial focus. It clears this flag the moment you actually navigate.
+skipleveljingle=(startpos!="esc");
+// Force checkmenu to treat the opening item as a fresh focus so it announces the status, even when we got here
+// by pressing escape mid-level - in that path mp still holds the level we were just on, so without this the
+// reopened browser would speak only the name and skip the status.
+mp="";
 string o;
-if (lang==1) o=lmenu.run_extended("Level select menu: "+levels+" available levels. "+locked+" are locked.",true,"esc",true);
-if (lang==2) o=lmenu.run_extended("Selecciona un nivel: "+levels+" niveles disponibles, y "+locked+" están bloqueados.",true,"esc",true);
+if (lang==1) o=lmenu.run_extended("Level select menu: "+levels+" available levels. "+locked+" are locked.",true,startpos,true);
+if (lang==2) o=lmenu.run_extended("Selecciona un nivel: "+levels+" niveles disponibles, y "+locked+" están bloqueados.",true,startpos,true);
 while (is_in_array(o,lockedlevels)) {
 lockerror.stop();
 lockerror.play();
-o=lmenu.run_extended(lock,true,"esc",false);
+o=lmenu.run_extended(lock,true,o,false);
 wait(5);
 }
 if (o=="esc") {
@@ -202,6 +214,7 @@ start();
 return;
 }
 else {
+levpos=o;   // remember this level so the browser reopens here next time
 if (levfiles[levfiles.length()-1]==o) last=true;
 startlev(o);
 }
