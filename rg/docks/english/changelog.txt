@@ -1,4 +1,5 @@
 ﻿New in 1.3.
+Pressing escape during a level now opens a pause menu where you can resume, restart the level, or quit to the level select screen. During a tutorial it instead lets you resume or skip straight to the level, and pressing q from anywhere you are reading skips the whole tutorial.
 The level select screen now reopens on the level you were last on, even after restarting the game, so you no longer land back at the top of the list every time.
 Every menu now uses and remembers the same background music volume, so it no longer jumps back to a fixed level when you open the level select screen.
 New in 1.2.

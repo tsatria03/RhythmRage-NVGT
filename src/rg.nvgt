@@ -21,6 +21,9 @@ int tut_right=0,tut_wrong=0,tut_start=0,tut_finish=0,tut_max=0;
 bool musiconly;
 bool perfectrun=false;
 bool replaying=false;   // set by the pause menu's restart, so startlev skips the choice screen and replays the level
+bool restarted=false;   // set by restart too, so loadlev skips the achievements prompt and start jingle on a replay
+bool skiptut=false;     // pause-menu "skip tutorial" / q pressed in a tutorial: jump to the actual level
+bool quittut=false;     // pause-menu "quit" during a tutorial: return to level select
 double keycal=0;
 int menuvol=-10;   // main-menu music volume, persisted in rg.dat and adjusted with page up/down
 double timewindow;

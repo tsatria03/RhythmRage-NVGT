@@ -420,6 +420,45 @@ if (lang==2) o=pmenu.run_extended("menú de pausa",true,"resume",true);
 if (o=="esc") o="resume";
 return o;
 }
+// Pause the given tutorial audio, open the pause menu, and resume that audio if the player chose resume.
+// Returns the raw choice ("resume", "skip" or "quit") so the caller can act on skip/quit.
+string tutorial_pause(sound@ tmus) {
+bool wasplaying=tmus.playing;
+if (wasplaying) tmus.pause();
+pool.pause_all();
+string pr=pause_menu();
+if (pr=="resume") {
+if (wasplaying) tmus.play();
+pool.resume_all();
+}
+return pr;
+}
+// Called from the shared text-pause loop (history.nvgt) when escape is pressed mid-tutorial; tutem is the
+// tutorial's backing music during text scenes. On resume the caller stays parked on the same message.
+string tutorial_pause_here() {
+return tutorial_pause(tutem);
+}
+// End the tutorial and drop straight into a normal playthrough of the actual level (choice screen skipped).
+void skip_tutorial() {
+skiptut=false;
+quittut=false;
+tutem.stop();
+tut_mus.stop();
+pool.destroy_all();
+tutorial=false;
+replaying=true;
+startlev(olv);
+}
+// Leave the tutorial entirely and return to the level select screen.
+void quit_tutorial() {
+skiptut=false;
+quittut=false;
+tutem.stop();
+tut_mus.stop();
+pool.destroy_all();
+if (creatingpack and com!="") exit();
+else startgame(1);
+}
 void loadlev(string name,int volume) {
 perfect=true;
 if (tutorial) {
@@ -437,7 +476,9 @@ actions.resize(0);
 sounds.resize(0);
 }
 totalactions=actions.length();
-if (unlockeda<totala and com=="") {
+// On a restart from the pause menu we skip the achievements prompt and the start jingle below, so a replay
+// drops you straight back into the level.
+if (unlockeda<totala and com=="" and !restarted) {
 if (lang==1) rd.add("This level has "+totala+" achievements, and you have unlocked "+unlockeda+". Press enter to continue...",false,true);
 if (lang==2) rd.add("Este nivel tiene "+totala+" logros y has desbloqueado "+unlockeda+". Pulsa enter para continuar...",false,true);
 }
@@ -452,7 +493,8 @@ if (!jing and creatingpack) {
 alert("jingle error","level start jingle not found. If it shouldn't be named "+jng+".ogg, make sure you define it correctly in the script by using the music jingle=... command.");
 exit();
 }
-if (com=="") playintro(jng,false);
+if (com=="" and !restarted) playintro(jng,false);
+restarted=false;   // consumed: only the immediate replay skips the prompt and jingle
 music.volume=volume;
 if (musiconly) music.volume=0;
 if (seek!=0) music.seek(seek);
@@ -525,6 +567,7 @@ music.stop();
 pool.destroy_all();
 for (uint i=0;i<actions.length();i++) actions[i].apool.destroy_all();
 replaying=true;
+restarted=true;
 startlev(olv);
 return;
 }
@@ -851,6 +894,8 @@ if (r=="play") question_state=2;
 if (question_state==1) lv=ln+".tut";
 if (string_right(lv,4)==".tut") {
 tutorial=true;
+skiptut=false;
+quittut=false;
 music.stop();
 }
 jng=string_left(lv,lv.length()-4)+"j";
@@ -892,7 +937,16 @@ string[] lines=string_split(the_string,"\r\n",false);
 for (uint i=gotoline;i<lines.length();i++) {
 string ach="";
 if (tutorial) {
-if (key_pressed(KEY_Q)) break;
+// q skips the whole tutorial; escape (pressed between lines) opens the pause menu. Most escapes happen while
+// reading a text scene, which is handled in the shared pause loop; those set the same flags we check here.
+if (key_pressed(KEY_Q)) skiptut=true;
+if (key_pressed(KEY_ESCAPE)) {
+string pr=tutorial_pause(tutem);
+if (pr=="skip") skiptut=true;
+if (pr=="quit") quittut=true;
+}
+if (skiptut) { skip_tutorial(); return; }
+if (quittut) { quit_tutorial(); return; }
 }
 string achie="";
 string[] words=string_split(lines[i]," ",true);
@@ -953,9 +1007,9 @@ while(true) {
 // (which worked in BGT's busy loop) fail to register any input at all.
 wait(5);
 if (key_pressed(KEY_ESCAPE)) {
-tut_mus.stop();
-if (creatingpack and com!="") exit();
-else startgame(1);
+string pr=tutorial_pause(tut_mus);
+if (pr=="skip") { skip_tutorial(); return; }
+if (pr=="quit") { quit_tutorial(); return; }
 }
 if (debug && key_pressed(KEY_Z)) {
 rd.say(intersounds.length());

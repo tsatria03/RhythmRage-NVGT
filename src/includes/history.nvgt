@@ -24,7 +24,18 @@ bool check=this.process(); //we don't want to display an error message if we're 
 if (!check) {
 int[] keys=keys_pressed();
 if (keys.length()>0) {
-if (keys[0]==KEY_Q) {//key q
+if (keys[0]==KEY_ESCAPE && tutorial) {//escape opens the pause menu during a tutorial
+// Resume parks us back on this same message (no auto-read - press a key to hear it again); skip and quit are
+// flagged for the tutorial loop to act on once this pause returns.
+string pr=tutorial_pause_here();
+if (pr=="skip") { skiptut=true; break; }
+if (pr=="quit") { quittut=true; break; }
+}//escape tutorial
+else if (keys[0]==KEY_Q) {//key q
+if (tutorial) {//in a tutorial, q skips the whole thing
+skiptut=true;
+break;
+}
 this.pauses_allowed=false;
 if (lang==1) this.rd.say("OK, no more pauses. Sorry!");
 if (lang==2) this.rd.say("OK, me llevo las pausas. Sorry.");

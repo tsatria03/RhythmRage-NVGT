@@ -1,12 +1,12 @@
 ####These are the things that need to be finished for future versions of the game.
 
-****Unfinished.  add a pause menu to the escape key.
 ****Unfinished.  Make this game translatable to other languages.
 ****Unfinished.  Add a confirmation before exiting from the main menu so you don't quit by accident.
 ****Unfinished.  Announce how many levels you've completed out of the total when you open a pack.
 
 ##These are the things that are already finished from earlier versions of the game.
 
+**Finished.  Add a pause menu to the escape key.
 **Finished.  Make the level select menu remember where you were so it doesn't open at the top every time.
 **Finished.  Make it so the music volume for menus does not reset if you go into another menu.
 **Finished.  Add the ability to turn down the pack music with page up and down when playing a level.
