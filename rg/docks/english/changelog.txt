@@ -1,4 +1,5 @@
 ﻿New in 1.4.
+After finishing a level, you can now press enter during the score calculation to skip the suspense and jump straight to your result.
 Pressing escape during a perfect run or while listening to a level's soundtrack now opens a pause menu with resume and quit, instead of leaving straight away.
 While testing a pack, pressing tab in the level select now tells you which pack you are testing instead of a completion count, since test packs don't track completion.
 When testing a pack, pressing escape to leave now asks you to confirm before ending the test.

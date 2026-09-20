@@ -469,6 +469,17 @@ pool.destroy_all();
 if (creatingpack and com!="") exit();
 else startgame(1);
 }
+// Wait up to ms milliseconds, but return true early if the player presses enter. Used by the post-level score
+// "calculation" so enter can skip the suspenseful ticking. Yields each iteration so NVGT keeps pumping input.
+bool skippable_wait(int ms) {
+int waited=0;
+while (waited<ms) {
+if (key_pressed(KEY_RETURN)) return true;
+wait(5);
+waited+=5;
+}
+return false;
+}
 void loadlev(string name,int volume) {
 perfect=true;
 if (tutorial) {
@@ -740,15 +751,17 @@ nopack();
 if (!creatingpack && well>=ok_n) cash+=well;
 if (lang==1) rd.say("let's see...");
 if (lang==2) rd.say("veamos...");
-pool.play_stationary("calc1",false);
 com="";
-wait(random(150,300));
+// The four calc1 ticks build suspense while the (already computed) score is "worked out". Pressing enter skips
+// the ticking and jumps straight to the final verdict sound. Each tick plays, then waits - and that wait is
+// interruptible, so a skip during any of them breaks out to the calc2/calc3 sting below.
+bool skipcalc=false;
 pool.play_stationary("calc1",false);
-wait(random(350,600));
-pool.play_stationary("calc1",false);
-wait(random(650,800));
-pool.play_stationary("calc1",false);
-wait(random(450,600));
+if (skippable_wait(random(150,300))) skipcalc=true;
+if (!skipcalc) { pool.play_stationary("calc1",false); skipcalc=skippable_wait(random(350,600)); }
+if (!skipcalc) { pool.play_stationary("calc1",false); skipcalc=skippable_wait(random(650,800)); }
+if (!skipcalc) { pool.play_stationary("calc1",false); skipcalc=skippable_wait(random(450,600)); }
+// The final verdict sound always plays, whether or not the ticking was skipped.
 if (good>bad) {
 pool.play_stationary("calc3",false);
 wait(random(1500,3000));
