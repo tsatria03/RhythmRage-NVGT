@@ -17,7 +17,6 @@ rg/lib/
 # Binary media assets
 rg/mypacks/
 rg/data/assets/
-rg/data/packs/
 
 # Local player save (the dev's own profile, written here when testing from source) - never commit or ship
 rg/data/saves/rg.dat

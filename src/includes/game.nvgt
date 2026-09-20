@@ -2228,6 +2228,108 @@ wait(5);
 start();
 return;
 }
+// Reverse a compiled pack back into a loose source folder under mypacks. Non-ogg entries (.lvl/.tut/...) were
+// stored raw, so they're written out unchanged; ogg entries were stored encrypted and without their .ogg
+// extension, so they're decrypted with the pack's key and given their .ogg back. Uses a LOCAL pack_file so the
+// game's currently open pack is left untouched.
+bool decompile_one_pack(string name) {
+pack_file dpack;
+if (!dpack.open(packdir+name+".pack")) return false;
+string[] files=dpack.list_files();
+if (files.length()==0) return false;
+string outdir=path+"mypacks/"+name;
+directory_create(path+"mypacks");
+directory_create(outdir);
+string key=name+"guillemandoriolftw";
+int percent=0;
+for (uint i=0;i<files.length();i++) {
+datastream@ f=dpack.get_file(files[i]);
+if (@f==null) continue;
+string bytes=f.read();
+if (string_contains(files[i],".",1)!=-1) {
+// Raw file - write it out unchanged.
+file out;
+if (out.open(outdir+"/"+files[i],"wb")) { out.write(bytes); out.close(); }
+}
+else {
+// Encrypted ogg stored without its extension - stash the bytes, decrypt to <name>.ogg, then clean up.
+file tmp;
+if (tmp.open("decdata","wb")) { tmp.write(bytes); tmp.close(); }
+file_decrypt("decdata",outdir+"/"+files[i]+".ogg",key);
+}
+int pct=int(double(i+1)/double(files.length())*100);
+if (pct>=percent+2) { beep_percentage(pct); percent=pct; }
+}
+file_delete("decdata");
+return true;
+}
+// Browse the compiled packs in app data that haven't been decompiled into mypacks yet, and unpack the chosen one
+// into a loose source folder there. Mirrors the compile browser: progress plays as a rising beep, and the list
+// shrinks as packs are decompiled.
+void decompilepacks() {
+nopack();
+packing=true;
+string[] packs=find_files(packdir+"*.pack");
+string[] actualpacks;
+for (uint i=0;i<packs.length();i++) {
+string base=string_trim_right(packs[i],5);   // strip ".pack"
+if (!directory_exists(path+"mypacks/"+base)) actualpacks.insert_last(base);
+}
+if (actualpacks.length()==0) {
+if (lang==1) rd.say("There are no more packs to decompile!");
+if (lang==2) rd.say("No hay más packs para descompilar!");
+start();
+return;
+}
+if (lang==1) rd.say("Use the arrow keys to browse packs to decompile, and enter to decompile one. You can cancel with escape.");
+if (lang==2) rd.say("Usa las flechas para explorar los packs por descompilar, y enter para descompilar uno. Con escape cancelas.");
+int pos=-1;
+get_characters(); // discard input typed before the browser opened
+while (packing) {
+if (key_pressed(KEY_ESCAPE)) packing=false;
+if (key_repeating(KEY_DOWN) or key_repeating(KEY_RIGHT)) {
+pos+=1;
+if (pos>actualpacks.length()-1) pos=0;
+rd.say(actualpacks[pos]);
+}
+if (key_repeating(KEY_UP) or key_repeating(KEY_LEFT)) {
+pos-=1;
+if (pos<0) pos=actualpacks.length()-1;
+rd.say(actualpacks[pos]);
+}
+string chars=get_characters();
+if (chars!="") {
+int idx=next_first_letter(actualpacks, pos, chars.substr(0,1).lower());
+if (idx>=0) { pos=idx; rd.say(actualpacks[pos]); }
+}
+if (key_pressed(KEY_RETURN) and pos>=0) {
+string name=actualpacks[pos];
+if (lang==1) rd.say("Decompiling "+name+". Please wait.");
+if (lang==2) rd.say("Descompilando "+name+". Por favor espera.");
+if (decompile_one_pack(name)) {
+if (lang==1) rd.say("complete!");
+if (lang==2) rd.say("Listo!");
+actualpacks.remove_at(pos);
+if (actualpacks.length()==0) {
+if (lang==1) rd.say("There are no more packs to decompile!");
+if (lang==2) rd.say("No hay más packs para descompilar!");
+packing=false;
+}
+else {
+if (pos>actualpacks.length()-1) pos=actualpacks.length()-1;
+rd.say(actualpacks[pos]);
+}
+}
+else {
+if (lang==1) rd.say("Error decompiling that pack!");
+if (lang==2) rd.say("Error al descompilar ese pack!");
+}
+}
+wait(5);
+}
+start();
+return;
+}
 // Download one pack from the server into the app-data packs folder. Returns true only if the file is actually
 // there afterwards - the downloader deletes it on a non-200 response and initiate_download returns false with no
 // connection - so a false result cleanly means "couldn't get it".
@@ -2260,24 +2362,38 @@ if (lang==1) rd.say("Download complete.");
 if (lang==2) rd.say("Descarga completa.");
 return true;
 }
-// First-run seeding: when the app-data packs folder is completely empty, get the two default packs there. Try
-// downloading both from the pack server; for anything the download couldn't fetch, fall back to compiling it
-// from its mypacks source folder. If the default pack still isn't available afterwards the game can't run, so
-// alert and exit.
+// Ensure one default pack exists in app data. Compile it from its mypacks source first (offline-first, and it
+// uses the sources shipped with the build); only if there is no source to build from - or the build fails - fall
+// back to downloading it. Does nothing when the pack is already present.
+void seed_default_pack(string name, string base) {
+if (file_exists(packdir+name+".pack")) return;
+if (directory_exists(path+"mypacks/"+name)) {
+if (lang==1) rd.say("Compiling "+name+".pack");
+if (lang==2) rd.say("Compilando "+name+".pack");
+if (compile_one_pack(name)) {
+if (lang==1) rd.say("Compile complete.");
+if (lang==2) rd.say("Compilación completa.");
+return;
+}
+}
+download_pack(base,name);
+}
+// First-run seeding: make sure the two default packs are present in app data, filling in only the ones that are
+// missing (compile from mypacks first, download if there's no source). If the default pack still isn't available
+// afterwards the game can't run, so alert and exit.
 void ensure_default_packs() {
-if (creatingpack) return;                              // testing a loose pack - leave the defaults alone
-if (find_files(packdir+"*.pack").length()>0) return;   // packs already present, nothing to seed
+if (creatingpack) return;   // testing a loose pack - leave the defaults alone
+// Only seed when there are no packs at all. If the player already has ANY pack (a default or something else),
+// leave things be - don't compile or download the defaults on top of existing content.
+if (find_files(packdir+"*.pack").length()>0) return;
 string packbase="http://reality-breaker-studios.net/RhythmRage/";
-if (lang==1) rd.say("No packs found. Getting the default packs, please wait.");
-if (lang==2) rd.say("No se encontraron packs. Obteniendo los packs predeterminados, por favor espera.");
-download_pack(packbase,"default");
-download_pack(packbase,"default_espanol");
-// For anything the download didn't get, build it from its mypacks source if that exists.
-if (!file_exists(packdir+"default.pack") and directory_exists(path+"mypacks/default")) compile_one_pack("default");
-if (!file_exists(packdir+"default_espanol.pack") and directory_exists(path+"mypacks/default_espanol")) compile_one_pack("default_espanol");
+if (lang==1) rd.say("Setting up the default packs, please wait.");
+if (lang==2) rd.say("Preparando los packs predeterminados, por favor espera.");
+seed_default_pack("default",packbase);
+seed_default_pack("default_espanol",packbase);
 if (!file_exists(packdir+"default.pack")) {
-if (lang==1) alert("error","Couldn't download or build the default pack, and there was no internet connection or source files to fall back on. The game can't start.");
-if (lang==2) alert("error","No se pudo descargar ni compilar el pack predeterminado, y no había conexión a internet ni archivos de origen. El juego no puede iniciarse.");
+if (lang==1) alert("error","Couldn't build or download the default pack, and there were no source files or internet connection to fall back on. The game can't start.");
+if (lang==2) alert("error","No se pudo compilar ni descargar el pack predeterminado, y no había archivos de origen ni conexión a internet. El juego no puede iniciarse.");
 exit();
 }
 }

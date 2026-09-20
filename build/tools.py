@@ -27,9 +27,10 @@ RG_DIR    = os.path.join(REPO_DIR, "rg")          # the game's data folder
 # generator reads pack names from here.
 APPDATA_PACKS = os.path.join(os.environ.get("APPDATA", ""), "Oriol Gomez", "RhythmRage", "packs")
 # Copied from rg/ into every build. data/ holds runtime game data - assets/ (engine sound packs) and saves/
-# (the portable profile). docks/ holds the player-facing docs. NOT: mypacks/ (authoring), sounds/ (raw sound
-# source, built into data/assets), *.py launchers, or lib (bundler-supplied). Packs are NOT shipped here - the
-# game keeps its packs in an app-data folder and gets them there separately.
+# (the portable profile). docks/ holds the player-facing docs. NOT: sounds/ (raw sound source, built into
+# data/assets), *.py launchers, or lib (bundler-supplied). Packs are NOT shipped here - the game keeps its packs
+# in an app-data folder and gets them there separately. From mypacks/, only the two default pack SOURCE folders
+# ship (see _copy_default_sources), so the game can compile the defaults offline when it can't download them.
 SHIP      = ["data", "docks"]
 
 # copytree ignore callback for _copy_ship: drops rg.dat (the dev's save) and any .gitkeep, anywhere.
@@ -39,6 +40,23 @@ def _ship_ignore(src_dir, names):
         if n.lower() in ("rg.dat", ".gitkeep"):
             ignored.add(n)
     return ignored
+
+# The default pack SOURCE folders (under rg/mypacks) shipped inside the build's mypacks/, so the game can compile
+# the defaults locally as an offline fallback when they can't be downloaded. Other authoring sources don't ship.
+DEFAULT_PACK_SOURCES = ("default", "default_espanol")
+
+def _copy_default_sources(mypacks_dest):
+    # Copy each default pack source folder from rg/mypacks into mypacks_dest. A missing source is a warning, not
+    # fatal (players can still download that default in-game).
+    os.makedirs(mypacks_dest, exist_ok=True)
+    for name in DEFAULT_PACK_SOURCES:
+        src = os.path.join(RG_DIR, "mypacks", name)
+        if not os.path.isdir(src):
+            print(f"WARNING: default pack source not found, skipping: {src}")
+            continue
+        shutil.copytree(src, os.path.join(mypacks_dest, name), dirs_exist_ok=True, ignore=_ship_ignore)
+        print(f"Shipped default pack source: mypacks/{name}")
+    return True
 # Destination for each platform: the bundle (named after the script) goes inside the existing RhythmRage_<platform> folder.
 WIN_DEST  = os.path.join(REPO_DIR, "releases", "windows", "RhythmRage_windows", NVGT_OUT)          # ...\rg  (folder: rg.exe + lib + data)
 MAC_DEST  = os.path.join(REPO_DIR, "releases", "mac", "RhythmRage_mac", NVGT_OUT + ".app")         # ...\rg.app
@@ -359,10 +377,10 @@ def _build_level_tool_windows():
         print(f"ERROR: level tool compile produced no exe at {lt_exe}.")
         return False
     shutil.move(lt_exe, os.path.join(WIN_DEST, "lt.exe"))
-    # Ship an empty mypacks/ beside the tool so pack authors have a ready place to drop source folders (the
-    # compiled tool scans "mypacks" in its own folder). We create it empty rather than copying rg/mypacks sources.
-    os.makedirs(os.path.join(WIN_DEST, "mypacks"), exist_ok=True)
-    print(f"Level tool added: {os.path.join(WIN_DEST, 'lt.exe')} (with empty mypacks/)\n")
+    # Ship the default pack SOURCE folders in mypacks/ beside the tool: the level tool scans "mypacks" here, and
+    # the game compiles these locally as its offline fallback when the default packs can't be downloaded.
+    _copy_default_sources(os.path.join(WIN_DEST, "mypacks"))
+    print(f"Level tool added: {os.path.join(WIN_DEST, 'lt.exe')} (with default pack sources in mypacks/)\n")
     return True
 
 def do_build():
@@ -385,6 +403,8 @@ def do_build():
     # Mac: game only for now (the level tool is Windows-first).
     if not _build_one("mac", NVGT_OUT + ".app", MAC_DEST, os.path.join("Contents", "Resources")):
         return False
+    # Ship the default pack sources into the Mac app's mypacks/ too, so its offline compile fallback works.
+    _copy_default_sources(os.path.join(MAC_DEST, "Contents", "Resources", "mypacks"))
     print("Build complete.\n")
     return True
 
