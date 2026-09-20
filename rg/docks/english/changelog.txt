@@ -1,7 +1,9 @@
-﻿New in 1.3.
+﻿New in 1.4.
+If your packs are ever missing, the game rebuilds the default packs the next time it starts, using files included with the game when you are offline, or downloading them otherwise.
+New in 1.3.
 Pack creators can now compile a pack from its source files, and decompile a pack back into editable source, both from the main menu.
 The pack downloader now returns you to the list after each download, so you can grab several packs in a row without reopening it.
-Your packs are now kept in a folder in your app data, and the game sets up its default packs automatically the first time you run it.
+Your packs are now kept in a folder in your app data.
 In the main menu, you can now press tab to hear which pack you are currently playing.
 The music that plays after you finish a level can now be turned up or down with page up and page down.
 In the level select screen, you can now press tab to hear how many of the pack's levels you have completed out of the total.
