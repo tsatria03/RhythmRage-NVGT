@@ -395,16 +395,17 @@ achs.load("newach");
 if (played) music.play_looped();
 }
 // The in-level pause menu. Items adapt to the context: "skip tutorial" only while a tutorial is playing,
-// "restart" only during an actual level. Resume is focused first, and escape out of this menu also resumes.
-// Menu UI sounds (menu_move) come from the current game pack, which is already the active storage in a level.
-// The caller is responsible for pausing/resuming the right audio around this call.
-string pause_menu() {
+// "restart" only during an actual level. Passing simple=true drops both extras and offers just resume and quit,
+// used by the passive listen modes (perfect run and soundtrack) which have nothing to skip or restart. Resume is
+// focused first, and escape out of this menu also resumes. Menu UI sounds (menu_move) come from the current game
+// pack, which is already the active storage in a level. The caller pauses/resumes the right audio around this call.
+string pause_menu(bool simple=false) {
 enhanced_menu pmenu;
 pmenu.set_speech_mode(rd.reader_mode);
 pmenu.move_path="menu_move";
 pmenu.ats("resume","reanudar","resume");
-if (tutorial) pmenu.ats("skip tutorial","saltar el tutorial","skip");
-if (!tutorial) pmenu.ats("restart","reiniciar","restart");
+if (!simple and tutorial) pmenu.ats("skip tutorial","saltar el tutorial","skip");
+if (!simple and !tutorial) pmenu.ats("restart","reiniciar","restart");
 pmenu.ats("quit","salir","quit");
 string o;
 if (lang==1) o=pmenu.run_extended("pause menu",true,"resume",true);
@@ -542,13 +543,29 @@ rd.say(music.position);
 }
 else if (keys[0]==KEY_ESCAPE) {
 if (perfectrun or musiconly) {
-// Perfect run and soundtrack are passive listen modes with nothing to pause, so escape just leaves the level
-// and returns to the level select screen, silencing anything still playing.
+// Perfect run and soundtrack are passive listen modes, but escape still opens a pause menu so you don't leave
+// by accident. There's nothing to skip or restart here, so it offers only resume and quit (simple=true).
+// Freeze the same audio a real playthrough does: the backing music, the shared pool, and each action's pool.
+music.pause();
+pool.pause_all();
+for (uint i=0;i<actions.length();i++) actions[i].apool.pause_all();
+if (cooldown) cooler.pause();
+string pr=pause_menu(true);
+if (pr=="quit") {
+// Silence everything before leaving so nothing keeps sounding after escape.
 music.stop();
 pool.destroy_all();
 for (uint i=0;i<actions.length();i++) actions[i].apool.destroy_all();
 if (creatingpack and com!="") exit();
 else startgame(1);
+}
+else {
+// resume: unfreeze and carry on listening from where we paused.
+music.play();
+pool.resume_all();
+for (uint i=0;i<actions.length();i++) actions[i].apool.resume_all();
+if (cooldown) cooler.resume();
+}
 }
 else {
 // A real playthrough: pause and open the pause menu. Freeze everything gameplay was sounding - the backing
