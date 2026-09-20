@@ -1,4 +1,5 @@
 ﻿New in 1.4.
+When testing a pack, pressing escape to leave now asks you to confirm before ending the test.
 Pack creators can now test a pack straight from its source files, with every level unlocked and nothing saved, and without touching or overwriting your installed packs.
 If your packs are ever missing, the game rebuilds the default packs the next time it starts, using files included with the game when you are offline, or downloading them otherwise.
 New in 1.3.

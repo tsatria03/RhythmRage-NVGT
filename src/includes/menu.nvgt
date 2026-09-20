@@ -1,12 +1,15 @@
 void start() {
 if (testing) {
-// Returning to the main menu ends a pack test: leave creator mode, delete the throwaway temp build, and
-// restore the pack you had open before.
+// Returning to the main menu ends a pack test. The temp build must be fully released before it can be deleted:
+// the level-select music streams from it, so stop the music and pool, repoint sound storage to the real pack
+// (yespack), and only then delete the throwaway build. Windows won't remove a file that is still held open.
 testing=false;
 creatingpack=false;
-file_delete(DIRECTORY_TEMP+"/temptest.pack");
+music.stop();
+pool.destroy_all();
 pack=pretestpack;
 yespack();
+file_delete(testfile);
 }
 if (com!="" and creatingpack) {
 startlev(com);
@@ -262,6 +265,22 @@ wait(5);
 }
 if (o=="esc") {
 select.play();
+// Escaping the level select ends a pack test and returns to the main menu (start() tears down the throwaway
+// build). Because that discards the test session, confirm first. "no" is focused and escape counts as no, so
+// only a definite yes ends the test; anything else reopens the level select.
+if (testing) {
+enhanced_menu confirm;
+confirm.ats("yes","si","y");
+confirm.ats("no!","no!","n");
+confirm.set_speech_mode(rd.reader_mode);
+string q;
+if (lang==1) q=confirm.run_extended("Are you sure you want to end this test pack?",true,"n",true);
+if (lang==2) q=confirm.run_extended("Seguro que quieres terminar esta prueba del pack?",true,"n",true);
+if (q!="y") {
+startgame(1);
+return;
+}
+}
 //fade(music);
 start();
 return;

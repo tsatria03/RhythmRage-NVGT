@@ -187,10 +187,16 @@ return floor(v1 / v2 * 100);
 void nopack() {
 set_sound_storage(path+"data/assets/sounds"+lang+".pack");
 }
+// Left-pad an integer with zeros to at least `width` digits (nvgt2 has no format_int).
+string zero_pad(int n, int width) {
+string s=""+n;
+while (int(s.length())<width) s="0"+s;
+return s;
+}
 // Full path to the pack the game currently has open. During a menu-launched test it's a throwaway build in the
 // OS temp folder; otherwise it's the real pack in the app-data packs folder.
 string cur_pack_file() {
-if (testing) return DIRECTORY_TEMP+"/temptest.pack";
+if (testing) return testfile;
 return packdir+pack+".pack";
 }
 void yespack() {

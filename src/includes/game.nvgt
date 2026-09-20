@@ -2424,9 +2424,12 @@ if (key_pressed(KEY_RETURN) and pos>=0) {
 string name=sources[pos];
 if (lang==1) rd.say("Building "+name+" for testing. Please wait.");
 if (lang==2) rd.say("Compilando "+name+" para probar. Por favor espera.");
-// Build to a throwaway pack in the temp folder (encrypted with the real name's key so it loads normally),
-// so testing never writes to or overwrites anything in the app-data packs folder.
-if (compile_one_pack(name,DIRECTORY_TEMP+"/temptest.pack",name+"guillemandoriolftw")) {
+// Build to a throwaway pack in the temp folder (encrypted with the real name's key so it loads normally), so
+// testing never writes to or overwrites anything in the app-data packs folder. Each test uses a fresh filename
+// so a still-locked build from a previous test can't block this one; leftovers are cleared at startup.
+testnum++;
+testfile=DIRECTORY_TEMP+"/temptest"+zero_pad(testnum,6)+".pack";
+if (compile_one_pack(name,testfile,name+"guillemandoriolftw")) {
 packing=false;
 pretestpack=pack;   // remember the real pack so start() can restore it when the test ends
 pack=name;
