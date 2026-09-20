@@ -1,3 +1,9 @@
+// Optional key hook for the paused-message loop, set by the game (the level tool leaves it null). Given the
+// pressed key it returns "break" to end the pause, "stay" to keep the reader parked on the current message, or
+// "" to let the normal handling run. The game uses it for the in-tutorial pause menu without this shared file
+// needing to know about any game-specific globals.
+funcdef string history_key_hook(int key);
+history_key_hook@ history_hook=null;
 class message_history {
 string[] messages;
 bool auto_move_to_end=false;
@@ -24,18 +30,15 @@ bool check=this.process(); //we don't want to display an error message if we're 
 if (!check) {
 int[] keys=keys_pressed();
 if (keys.length()>0) {
-if (keys[0]==KEY_ESCAPE && tutorial) {//escape opens the pause menu during a tutorial
-// Resume parks us back on this same message (no auto-read - press a key to hear it again); skip and quit are
-// flagged for the tutorial loop to act on once this pause returns.
-string pr=tutorial_pause_here();
-if (pr=="skip") { skiptut=true; break; }
-if (pr=="quit") { quittut=true; break; }
-}//escape tutorial
-else if (keys[0]==KEY_Q) {//key q
-if (tutorial) {//in a tutorial, q skips the whole thing
-skiptut=true;
+// Let the game intercept the key first (used for the in-tutorial pause menu). "break" ends the pause, "stay"
+// keeps us parked on the current message, "" (or no hook) falls through to the normal handling below.
+string hooked="";
+if (@history_hook!=null) hooked=history_hook(keys[0]);
+if (hooked=="break") {
 break;
 }
+else if (hooked=="") {
+if (keys[0]==KEY_Q) {//key q
 this.pauses_allowed=false;
 if (lang==1) this.rd.say("OK, no more pauses. Sorry!");
 if (lang==2) this.rd.say("OK, me llevo las pausas. Sorry.");
@@ -49,6 +52,8 @@ if (lang==2) this.rd.say("Pulsa enter para seguir");
 else if (keys[0]==KEY_RETURN) {
 break;
 }//return
+}
+// hooked=="stay": the game consumed the key (e.g. resume) - keep parked on this message.
 }//length
 }//process check
 wait(5);

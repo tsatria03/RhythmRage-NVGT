@@ -430,6 +430,20 @@ return pr;
 string tutorial_pause_here() {
 return tutorial_pause(tutem);
 }
+// The key hook installed into the shared reader's pause loop (history_hook). Active only during a tutorial:
+// escape opens the pause menu (resume stays parked on the message; skip/quit set the flags the tutorial loop
+// reads), and q skips the whole tutorial. Returns "break"/"stay"/"" per the history_key_hook contract.
+string game_history_hook(int key) {
+if (!tutorial) return "";
+if (key==KEY_ESCAPE) {
+string pr=tutorial_pause_here();
+if (pr=="skip") { skiptut=true; return "break"; }
+if (pr=="quit") { quittut=true; return "break"; }
+return "stay";
+}
+if (key==KEY_Q) { skiptut=true; return "break"; }
+return "";
+}
 // End the tutorial and drop straight into a normal playthrough of the actual level. replaying skips the
 // choice screen; restarted skips the achievements prompt and start jingle, just like a pause-menu restart, so
 // skipping a tutorial lands you right in the level.
@@ -2103,14 +2117,13 @@ if (chars!="") {
 int idx=next_first_letter(actualpacks, pos, chars.substr(0,1).lower());
 if (idx>=0) { pos=idx; rd.say(actualpacks[pos]); }
 }
-if (key_pressed(KEY_RETURN)) {
+if (key_pressed(KEY_RETURN) and pos>=0) {
 if (lang==1) rd.say("Please wait while the pack is downloaded.");
 if (lang==2) rd.say("Por favor espera mientras descargamos tu pack.");
-dlb=dl.initiate_download(packbase+"packs/"+actualpacks[pos]+".pack",packdir+actualpacks[pos]+".pack");
+string dname=actualpacks[pos];
+dlb=dl.initiate_download(packbase+"packs/"+dname+".pack",packdir+dname+".pack");
 if (!dlb) {
 rd.say("error!");
-start();
-return;
 }//error
 else {
 while (dl.is_active()) {
@@ -2125,17 +2138,52 @@ dl.abort();;
 // NVGT needs a short yield here so it can pump window/input events; without it
 // Escape never registers to cancel the download and the loop pins a CPU core.
 wait(5);
-}//error
-packing=false;
-wait(5);
 }//while
+percent=0;   // reset progress for the next download
+if (file_exists(packdir+dname+".pack")) {
+// Downloaded OK: announce, drop it from the list, and stay so more can be grabbed - like the compile browser.
 if (lang==1) rd.say("complete!");
 if (lang==2) rd.say("Paquete descargado correctamente!");
+actualpacks.remove_at(pos);
+if (actualpacks.length()==0) {
+if (lang==1) rd.say("There are no more packs to download!");
+if (lang==2) rd.say("No hay más paquetes para descargar!");
+packing=false;
+}
+else {
+if (pos>actualpacks.length()-1) pos=actualpacks.length()-1;
+rd.say(actualpacks[pos]);
+}
+}
+else {
+// Cancelled or failed mid-download - leave it in the list to try again.
+if (lang==1) rd.say("Cancelled.");
+if (lang==2) rd.say("Cancelado.");
+}
+}//else download started
 }//key return
 wait(5);
 }
 start();
 return;
+}
+// Whether any loose source folder in mypacks hasn't been compiled into the app-data packs folder yet - used to
+// show the "compile a pack" menu item only when it has something to do.
+bool has_packs_to_compile() {
+string[] sources=find_directories(path+"mypacks/*");
+for (uint i=0;i<sources.length();i++) {
+if (!file_exists(packdir+sources[i]+".pack")) return true;
+}
+return false;
+}
+// Whether any compiled pack in app data hasn't been decompiled into mypacks yet - used to show the "decompile a
+// pack" menu item only when it has something to do.
+bool has_packs_to_decompile() {
+string[] packs=find_files(packdir+"*.pack");
+for (uint i=0;i<packs.length();i++) {
+if (!directory_exists(path+"mypacks/"+string_trim_right(packs[i],5))) return true;
+}
+return false;
 }
 // Build one pack from its author source folder in mypacks straight into the app-data packs folder, beeping
 // progress as it goes. Uses a LOCAL pack_file so the game's currently open pack (the global package) is left
@@ -2248,8 +2296,8 @@ if (@f==null) continue;
 string bytes=f.read();
 if (string_contains(files[i],".",1)!=-1) {
 // Raw file - write it out unchanged.
-file out;
-if (out.open(outdir+"/"+files[i],"wb")) { out.write(bytes); out.close(); }
+file outfile;
+if (outfile.open(outdir+"/"+files[i],"wb")) { outfile.write(bytes); outfile.close(); }
 }
 else {
 // Encrypted ogg stored without its extension - stash the bytes, decrypt to <name>.ogg, then clean up.

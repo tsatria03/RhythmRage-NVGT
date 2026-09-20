@@ -51,8 +51,8 @@ if (unlocksa.length()!=1) {
 menu.ats("change pack","cambiar paquete","change");
 }
 menu.ats("store (current credits "+cash+")","tienda (créditos ahora "+cash+")","store");
-menu.ats("compile a pack","compilar un pack","compilepack");
-menu.ats("decompile a pack","descompilar un pack","decompilepack");
+if (has_packs_to_compile()) menu.ats("compile a pack","compilar un pack","compilepack");
+if (has_packs_to_decompile()) menu.ats("decompile a pack","descompilar un pack","decompilepack");
 menu.ats("download new packs","descargar nuevos packs","getpacks");
 menu.ats("change language (current language is "+(lang==1?"English":"Spanish")+")","cambiar idioma (idioma actual: "+(lang==1?"inglés":"español")+")","lang");
 menu.ats("keyboard delay settings for virtual machines (current delay is "+keycal+"ms)","configurar retraso del teclado para máquinas virtuales (retraso actual es de "+keycal+"ms)","calkey");

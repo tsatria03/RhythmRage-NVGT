@@ -193,6 +193,7 @@ void main() {
 string[] cml=string_split(com,"\\",true);
 if (cml.length()>0) com=cml[cml.length()-1];
 else com="";
+@history_hook=@game_history_hook;   // route the shared reader's pause loop through the in-tutorial pause menu
 perfectjng="perfect_jingle";
 super="super_jingle";
 failjng="fail_jingle";
