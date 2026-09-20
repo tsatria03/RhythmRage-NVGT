@@ -187,10 +187,16 @@ return floor(v1 / v2 * 100);
 void nopack() {
 set_sound_storage(path+"data/assets/sounds"+lang+".pack");
 }
+// Full path to the pack the game currently has open. During a menu-launched test it's a throwaway build in the
+// OS temp folder; otherwise it's the real pack in the app-data packs folder.
+string cur_pack_file() {
+if (testing) return DIRECTORY_TEMP+"/temptest.pack";
+return packdir+pack+".pack";
+}
 void yespack() {
-set_sound_storage(packdir+pack+".pack");
+set_sound_storage(cur_pack_file());
 set_sound_decryption_key(pack+"guillemandoriolftw",false);
-package.open(packdir+pack+".pack");
+package.open(cur_pack_file());
 }
 string get_line(string filename,int number) {
 datastream@ f;

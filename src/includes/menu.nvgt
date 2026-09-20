@@ -1,4 +1,13 @@
 void start() {
+if (testing) {
+// Returning to the main menu ends a pack test: leave creator mode, delete the throwaway temp build, and
+// restore the pack you had open before.
+testing=false;
+creatingpack=false;
+file_delete(DIRECTORY_TEMP+"/temptest.pack");
+pack=pretestpack;
+yespack();
+}
 if (com!="" and creatingpack) {
 startlev(com);
 }
@@ -51,6 +60,7 @@ if (unlocksa.length()!=1) {
 menu.ats("change pack","cambiar paquete","change");
 }
 menu.ats("store (current credits "+cash+")","tienda (créditos ahora "+cash+")","store");
+if (has_packs_to_test()) menu.ats("test a pack","probar un pack","testpack");
 if (has_packs_to_compile()) menu.ats("compile a pack","compilar un pack","compilepack");
 if (has_packs_to_decompile()) menu.ats("decompile a pack","descompilar un pack","decompilepack");
 menu.ats("download new packs","descargar nuevos packs","getpacks");
@@ -76,6 +86,11 @@ fade(music);
 achclear();
 }
 
+if (o=="testpack") {
+select.play();
+fade(music);
+testpacks();
+}
 if (o=="compilepack") {
 select.play();
 fade(music);

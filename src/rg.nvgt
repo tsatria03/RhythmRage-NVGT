@@ -24,6 +24,8 @@ bool replaying=false;   // set by the pause menu's restart, so startlev skips th
 bool restarted=false;   // set by restart too, so loadlev skips the achievements prompt and start jingle on a replay
 bool skiptut=false;     // pause-menu "skip tutorial" / q pressed in a tutorial: jump to the actual level
 bool quittut=false;     // pause-menu "quit" during a tutorial: return to level select
+bool testing=false;     // in a menu-launched pack test; returning to the main menu ends it and restores the real pack
+string pretestpack;     // the pack that was open before a test started, restored when the test ends
 double keycal=0;
 int menuvol=-10;   // main-menu music volume, persisted in rg.dat and adjusted with page up/down
 double timewindow;
@@ -194,6 +196,7 @@ string[] cml=string_split(com,"\\",true);
 if (cml.length()>0) com=cml[cml.length()-1];
 else com="";
 @history_hook=@game_history_hook;   // route the shared reader's pause loop through the in-tutorial pause menu
+file_delete(DIRECTORY_TEMP+"/temptest.pack");   // clear any leftover pack-test build from an interrupted session
 perfectjng="perfect_jingle";
 super="super_jingle";
 failjng="fail_jingle";
@@ -239,6 +242,6 @@ if (com=="") playintro("logo"+lang,false);
 // something to open. Exits with an error if it can't get the default pack any way.
 ensure_default_packs();
 yespack();
-package.open(packdir+pack+".pack");
+package.open(cur_pack_file());
 start();
 }

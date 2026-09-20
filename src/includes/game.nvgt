@@ -308,7 +308,7 @@ if (music.playing) {
 music.stop();
 played=true;
 }
-bool suc=package.open(packdir+pack+".pack");
+bool suc=package.open(cur_pack_file());
 if (!suc) {
 alert("error","pack error!");
 exit();
@@ -2185,29 +2185,36 @@ if (!directory_exists(path+"mypacks/"+string_trim_right(packs[i],5))) return tru
 }
 return false;
 }
-// Build one pack from its author source folder in mypacks straight into the app-data packs folder, beeping
-// progress as it goes. Uses a LOCAL pack_file so the game's currently open pack (the global package) is left
-// untouched, and the same <name>guillemandoriolftw key and lowercased internal names as generate_packs so the
-// finished pack loads exactly like a downloaded one.
-bool compile_one_pack(string name) {
-string[] files=find_files(path+"mypacks/"+name+"/*");
+// Whether there is any loose source folder in mypacks at all - used to show the "test a pack" menu item.
+bool has_packs_to_test() {
+return find_directories(path+"mypacks/*").length()>0;
+}
+// Build a pack from a source folder in mypacks, beeping progress as it goes. The 3-argument form writes to an
+// explicit output path with an explicit key (used by "test a pack" to build a throwaway copy in the temp
+// folder); the 1-argument form is the normal case - it writes <name>.pack into the app-data packs folder with
+// the standard <name>guillemandoriolftw key. A LOCAL pack_file is used so the game's open pack is untouched.
+bool compile_one_pack(string source, string outfile, string key) {
+string[] files=find_files(path+"mypacks/"+source+"/*");
 if (files.length()==0) return false;
 pack_file cpack;
-cpack.create(packdir+name+".pack");
+cpack.create(outfile);
 int percent=0;
 for (uint counter=0;counter<files.length();counter++) {
 if (string_contains(files[counter],".ogg",1)!=-1) {
-if (!file_encrypt(path+"mypacks/"+name+"/"+files[counter],"encdata",name+"guillemandoriolftw")) return false;
+if (!file_encrypt(path+"mypacks/"+source+"/"+files[counter],"encdata",key)) return false;
 if (!cpack.add_file("encdata",string_to_lower_case(string_left(files[counter],files[counter].length()-4)))) return false;
 }
 else {
-if (!cpack.add_file(path+"mypacks/"+name+"/"+files[counter],string_to_lower_case(files[counter]))) return false;
+if (!cpack.add_file(path+"mypacks/"+source+"/"+files[counter],string_to_lower_case(files[counter]))) return false;
 }
 int pct=int(double(counter+1)/double(files.length())*100);
 if (pct>=percent+2) { beep_percentage(pct); percent=pct; }
 }
 file_delete("encdata");
 return true;
+}
+bool compile_one_pack(string name) {
+return compile_one_pack(name,packdir+name+".pack",name+"guillemandoriolftw");
 }
 // Browse the author source folders in mypacks that haven't been compiled into the app-data packs folder yet,
 // and compile the chosen one there. Works like the downloader: progress plays as a rising beep, and the list
@@ -2371,6 +2378,68 @@ rd.say(actualpacks[pos]);
 else {
 if (lang==1) rd.say("Error decompiling that pack!");
 if (lang==2) rd.say("Error al descompilar ese pack!");
+}
+}
+wait(5);
+}
+start();
+return;
+}
+// Build a mypacks source and drop straight into creator/test mode for it - all levels unlocked, no progress
+// saved, the pack rebuilt fresh from your sources - so edits can be tested without copying anything into the
+// packs folder. Escaping the level select back to the main menu ends the test and restores the pack that was
+// open before (handled at the top of start()).
+void testpacks() {
+nopack();
+packing=true;
+string[] sources=find_directories(path+"mypacks/*");
+if (sources.length()==0) {
+if (lang==1) rd.say("There are no packs to test!");
+if (lang==2) rd.say("No hay packs para probar!");
+start();
+return;
+}
+if (lang==1) rd.say("Use the arrow keys to choose a pack to test, and enter to test it. You can cancel with escape.");
+if (lang==2) rd.say("Usa las flechas para elegir un pack para probar, y enter para probarlo. Con escape cancelas.");
+int pos=-1;
+get_characters(); // discard input typed before the browser opened
+while (packing) {
+if (key_pressed(KEY_ESCAPE)) packing=false;
+if (key_repeating(KEY_DOWN) or key_repeating(KEY_RIGHT)) {
+pos+=1;
+if (pos>sources.length()-1) pos=0;
+rd.say(sources[pos]);
+}
+if (key_repeating(KEY_UP) or key_repeating(KEY_LEFT)) {
+pos-=1;
+if (pos<0) pos=sources.length()-1;
+rd.say(sources[pos]);
+}
+string chars=get_characters();
+if (chars!="") {
+int idx=next_first_letter(sources, pos, chars.substr(0,1).lower());
+if (idx>=0) { pos=idx; rd.say(sources[pos]); }
+}
+if (key_pressed(KEY_RETURN) and pos>=0) {
+string name=sources[pos];
+if (lang==1) rd.say("Building "+name+" for testing. Please wait.");
+if (lang==2) rd.say("Compilando "+name+" para probar. Por favor espera.");
+// Build to a throwaway pack in the temp folder (encrypted with the real name's key so it loads normally),
+// so testing never writes to or overwrites anything in the app-data packs folder.
+if (compile_one_pack(name,DIRECTORY_TEMP+"/temptest.pack",name+"guillemandoriolftw")) {
+packing=false;
+pretestpack=pack;   // remember the real pack so start() can restore it when the test ends
+pack=name;
+creatingpack=true;
+testing=true;
+yespack();
+checkpack();
+startgame(1);
+return;
+}
+else {
+if (lang==1) rd.say("Error building that pack!");
+if (lang==2) rd.say("Error al compilar ese pack!");
 }
 }
 wait(5);
