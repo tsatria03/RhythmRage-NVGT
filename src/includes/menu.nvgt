@@ -264,10 +264,10 @@ o=lmenu.run_extended(lock,true,o,false);
 wait(5);
 }
 if (o=="esc") {
-select.play();
 // Escaping the level select ends a pack test and returns to the main menu (start() tears down the throwaway
 // build). Because that discards the test session, confirm first. "no" is focused and escape counts as no, so
-// only a definite yes ends the test; anything else reopens the level select.
+// only a definite yes ends the test; anything else reopens the level select. The selection sound plays only on
+// yes (confirming the exit), not on opening the prompt.
 if (testing) {
 enhanced_menu confirm;
 confirm.ats("yes","si","y");
@@ -280,7 +280,14 @@ if (q!="y") {
 startgame(1);
 return;
 }
+// Confirmed. Play the selection sound to completion here, because start() reloads the select sound during its
+// test teardown and would otherwise cut it off before it's heard.
+select.stop();
+select.play_wait();
+start();
+return;
 }
+select.play();
 //fade(music);
 start();
 return;

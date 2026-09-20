@@ -120,9 +120,17 @@ return "";
 string checkmenu(enhanced_menu@ lmenu, string data) {
 if (key_repeating(KEY_NEXT)) { music.volume=music.volume-3; menuvol=music.volume; ser(); }
 if (key_repeating(KEY_PRIOR)) { music.volume=music.volume+3; menuvol=music.volume; ser(); }
+// Tab reports completion progress in a real pack. In a test/creator session every level is unlocked and nothing
+// is saved, so there's no meaningful count - announce the pack name instead, like the main menu does.
 if (key_pressed(KEY_TAB)) {
+if (creatingpack) {
+if (lang==1) rd.say("You're playing "+pack+".pack");
+if (lang==2) rd.say("Estás jugando "+pack+".pack");
+}
+else {
 if (lang==1) rd.say("You've completed "+levcompleted+" of "+levtotal+" levels.");
 if (lang==2) rd.say("Has completado "+levcompleted+" de "+levtotal+" niveles.");
+}
 }
 if (creatingpack) return "";
 string lev;
