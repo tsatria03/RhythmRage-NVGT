@@ -1,4 +1,5 @@
 ﻿New in 1.4.
+Pressing tab in the level select now also tells you your overall pack mastery, a single percentage covering your best score on every level in the pack, once you have completed at least one level.
 The level select now announces your best score percentage on each level you have played, right before its rating.
 After finishing a level, you can now press enter during the score calculation to skip the suspense and jump straight to your result.
 Pressing escape during a perfect run or while listening to a level's soundtrack now opens a pause menu with resume and quit, instead of leaving straight away.

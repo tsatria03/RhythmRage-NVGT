@@ -49,6 +49,7 @@ sound lockerror;
 string mp;
 string levpos="";   // last-focused item in the level select browser, persisted in rg.dat so it reopens where you left off
 int levcompleted=0,levtotal=0;   // level select progress (passed / total), filled by startgame so checkmenu can announce it on tab
+int levmastery=0;   // whole-pack mastery percent (average of every level's best score, unplayed as 0), filled by startgame for the tab announcement
 bool skipleveljingle=false;   // suppress only the status jingle (not the spoken status) on the first focus after reopening
 bool ok;
 int curlev;
@@ -128,8 +129,16 @@ if (lang==1) rd.say("You're playing "+pack+".pack");
 if (lang==2) rd.say("Estás jugando "+pack+".pack");
 }
 else {
-if (lang==1) rd.say("You've completed "+levcompleted+" of "+levtotal+" levels.");
-if (lang==2) rd.say("Has completado "+levcompleted+" de "+levtotal+" niveles.");
+// Once you've completed at least one level, append the whole-pack mastery percent; below that it's meaningless
+// (and would read as 0), so just the completed/total count is announced.
+if (levcompleted>=1) {
+if (lang==1) rd.say(""+levcompleted+" of "+levtotal+" levels completed, "+levmastery+" percent.");
+if (lang==2) rd.say(""+levcompleted+" de "+levtotal+" niveles completados, "+levmastery+" por ciento.");
+}
+else {
+if (lang==1) rd.say(""+levcompleted+" of "+levtotal+" levels completed.");
+if (lang==2) rd.say(""+levcompleted+" de "+levtotal+" niveles completados.");
+}
 }
 }
 if (creatingpack) return "";

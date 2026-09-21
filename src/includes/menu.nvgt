@@ -212,6 +212,7 @@ lmenu.move_path="menu_move";
 lmenu.set_callback(checkmenu, "");
 lmenu.set_speech_mode(rd.reader_mode);
 int levels=0,locked=0,completed=0;
+int masterysum=0;   // running total of every level's best-score contribution, divided by the level count for the pack mastery percent
 lockedlevels.resize(0);
 string levname;
 string lock;
@@ -220,6 +221,7 @@ if (lang==2) lock="bloqueado";
 for (uint i=0;i<levfiles.length();i++) {
 levname=string_trim_right(levfiles[i],4);
 if (get_level(levname)>=2) completed++;   // completed = passed at ok or better, across every level in the pack
+masterysum+=level_score_for_mastery(levname);   // partial credit from this level toward the whole-pack mastery percent
 //lockcheck
 if (get_level(levname)>1 or i==0 or creatingpack) {
 levels++;
@@ -254,6 +256,7 @@ mp="";
 // Expose the completed/total counts so the checkmenu callback can announce them when tab is pressed.
 levcompleted=completed;
 levtotal=levfiles.length();
+levmastery=levfiles.length()>0 ? int(round(double(masterysum)/double(levfiles.length()),0)) : 0;
 string o;
 if (lang==1) o=lmenu.run_extended("Level select menu: "+levels+" available levels. "+locked+" are locked.",true,startpos,true);
 if (lang==2) o=lmenu.run_extended("Selecciona un nivel: "+levels+" niveles disponibles, y "+locked+" están bloqueados.",true,startpos,true);
