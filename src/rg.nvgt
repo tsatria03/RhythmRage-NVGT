@@ -144,6 +144,7 @@ if (lang==2) rd.say("bloqueado");
 else {
 lev=string_trim_right(mp,4);
 int value=string_to_number(get_level(lev));
+int pct=get_percent(lev);   // best score percentage, or -1 if none is recorded yet
 sound@ statussound=null;
 switch(value) {
 case 0:
@@ -152,23 +153,44 @@ if (lang==2) rd.say("No has jugado este nivel");
 @statussound=newlevel;
 break;
 case 1:
+// Flunked: no percentage, just the status.
 if (lang==1) rd.say("You played this level and failed.");
 if (lang==2) rd.say("has fallado este nivel");
 @statussound=faillevel;
 break;
 case 2:
+// Passed: lead with the best percentage when we have one, then the rating. Old scores without a recorded
+// percentage fall back to just the rating.
+if (pct>=0) {
+if (lang==1) rd.say(""+pct+" percent, ok");
+if (lang==2) rd.say(""+pct+" por ciento, bien");
+}
+else {
 if (lang==1) rd.say("ok");
 if (lang==2) rd.say("bien");
+}
 @statussound=oklevel;
 break;
 case 3:
+if (pct>=0) {
+if (lang==1) rd.say(""+pct+" percent, super");
+if (lang==2) rd.say(""+pct+" por ciento, súper");
+}
+else {
 if (lang==1) rd.say("super");
 if (lang==2) rd.say("súper");
+}
 @statussound=superlevel;
 break;
 case 4:
+if (pct>=0) {
+if (lang==1) rd.say(""+pct+" percent, perfect!");
+if (lang==2) rd.say(""+pct+" por ciento, perfecto!");
+}
+else {
 if (lang==1) rd.say("perfect!");
 if (lang==2) rd.say("perfecto!");
+}
 @statussound=perfectlevel;
 break;
 }

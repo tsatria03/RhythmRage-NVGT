@@ -81,7 +81,9 @@ if (ok) {
 string[] lvl=string_split(result,",,,",true);
 for (uint i=0;i<lvl.length();i++) {
 string[] lvln=string_split(lvl[i],"===",true);
-set_level(lvln[0],lvln[1],levels[curl]);
+// Preserve the stored percentage (third field) when reconstructing, so a load doesn't drop it back to tier-only.
+if (lvln.length()>=3) set_level(lvln[0],lvln[1],levels[curl],string_to_number(lvln[2]));
+else set_level(lvln[0],lvln[1],levels[curl]);
 }
 }
 }
@@ -825,12 +827,13 @@ if (lang==2) rd.say("Pulsa enter para continuar...");
 }
 wait(5);
 }
-if (get_level(lname)<val) {
-if (!creatingpack) set_level(lname,val,pack);
-}
-else {
-if (get_level(lname)!=0) {
-}
+// Save the result as a new best when the tier improves, or when it ties the tier but beats the stored percentage,
+// so the level select can announce your best score. get_percent returns -1 for an unrecorded score, so the first
+// percentage on an already-passed level (e.g. one from an old, tier-only save) always records.
+int prevtier=get_level(lname);
+int prevpct=get_percent(lname);
+if (!creatingpack and (val>prevtier or (val==prevtier and well>prevpct))) {
+set_level(lname,val,pack,well);
 }
 }
 else {
@@ -1962,7 +1965,7 @@ achs.play();
 ser();
 }
 }
-void set_level(string level,string value,string pack) {
+void set_level(string level,string value,string pack,int percent=-1) {
 int whichone=-1;
 string info;
 ok=unlockinfo.get(pack+".pack",info);
@@ -1977,13 +1980,31 @@ break;
 if (whichone!=-1) {
 lvl.remove_at(whichone);
 }
-lvl.insert_last(level+"==="+value);
+// Store the score percentage as a third field when we have one, so the level select can announce it. Old entries
+// (and unplayed levels) keep just "name===tier"; the percentage is simply absent there.
+if (percent>=0) lvl.insert_last(level+"==="+value+"==="+percent);
+else lvl.insert_last(level+"==="+value);
 string built;
 for (uint i=0;i<lvl.length();i++) {
 built+=lvl[i]+",,,";
 }
 unlockinfo.set(pack+".pack",built);
 ser();
+}
+// The stored best-score percentage for a level in the current pack, or -1 if none is recorded (an unplayed level,
+// or one last beaten before percentages were saved). Mirrors get_level, but reads the optional third field.
+int get_percent(string level) {
+string info;
+if (!unlockinfo.get(pack+".pack",info)) return -1;
+string[] lvl=string_split(info,",,,",true);
+for (uint i=0;i<lvl.length();i++) {
+if (string_left(lvl[i],level.length())==level) {
+string[] parts=string_split(lvl[i],"===",true);
+if (parts.length()>=3) return string_to_number(parts[2]);
+return -1;
+}
+}
+return -1;
 }
 int get_level(string level) {
 int whichone=-1;
