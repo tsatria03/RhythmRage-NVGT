@@ -1,4 +1,6 @@
-﻿New in 1.4.
+﻿New in 1.5.
+Pack creators now get an error message for level script mistakes that used to crash the game. This covers things like a setting with no value, or a command that is missing some of its parts.
+New in 1.4.
 Fixed a slight delay that could happen the first time a level played several sounds together on one note.
 Tap tempo in the level tool works again, and you can now cancel it with escape.
 Tutorials now respond to q and escape while they are playing example sounds.

@@ -850,6 +850,23 @@ if (lang==2) get_ach("has completado el pack "+pack+"!");
 startgame(1);
 return;
 }
+// Level-script settings are written name=value. Alert (instead of crashing on what[1]) when a setting the parser
+// reads a value from is missing it, e.g. "time" instead of "time=500". Only these names are checked: an unknown
+// bare word was always ignored by play/misc/debug/music (and already alerted in action), so it stays that way and
+// no existing pack can newly fail to load. kp, mode and ach are left out because they don't read what[1].
+string[] valued_settings={"time","end","ends","volume","pan","pitch","name","alias","key","fail","efail","miss","early","late","super","cooldown","reaction","ok","seek","require","wait","jingle","perfect"};
+void check_value(string[]@ what) {
+if (what.length()!=1) return;
+if (!is_in_array(what[0],valued_settings)) return;
+alert("missing value","Line "+curline+": the "+what[0]+" setting has no value. Write it as "+what[0]+"=value.");
+exit();
+}
+// Alert (instead of crashing on an out-of-range index) when a command line has fewer parts than it needs.
+void check_parts(string[]@ words,uint needed,string usage) {
+if (words.length()>=needed) return;
+alert("missing parts","Line "+curline+": the "+words[0]+" command is missing something. Write it as: "+usage);
+exit();
+}
 void startlev(string lv) {
 actiontimes.resize(0);
 strict=false;
@@ -1028,11 +1045,14 @@ else if (words[0]=="stopsounds") {
 pool.destroy_all();
 }
 else if (words[0]=="wait" && tutorial) {
+check_parts(words,2,"wait milliseconds");
 wait(string_to_number(words[1]));
 }
 else if (words[0]=="interactive" && tutorial) {
 string[] params=words;
 if (params.length()>2) {
+// The setup form (as opposed to a bare "interactive" that runs the cues) reads params[1] to params[5].
+check_parts(params,6,"interactive music volume start finish max");
 tut_right=0;
 tut_count=0;
 tut_wrong=0;
@@ -1182,6 +1202,7 @@ break;
 }
 else if (words[0]=="intersound" && enhanced==true) {
 string[] params=words;
+check_parts(params,5,"intersound sound pitch pan time, then optionally key_name and an end time");
 preload_add(params[1]);
 intersound temp;
 bool meh=temp.snd.load(params[1]);
@@ -1192,6 +1213,10 @@ temp.time=string_to_number(params[4]);
 if (params.length()>=6) {
 //keys
 string[] what=string_split(params[5],"_",true);
+if (what[0]=="key" and what.length()<2) {
+alert("missing key","Line "+curline+": the intersound key has no name. Write it as key_ followed by the key, for example key_enter.");
+exit();
+}
 if (what[0]=="key") {
 if (what[1]=="enter") {
 temp.key=KEY_RETURN;
@@ -1290,6 +1315,7 @@ intersounds.insert_last(temp);
 continue;
 }
 else if (words[0]=="playwait" && tutorial) {
+check_parts(words,2,"playwait sound");
 playintro(words[1]);
 }
 
@@ -1315,6 +1341,7 @@ tuten.play();
 else if (words[0]=="misc" && !tutorial) {
 for (uint i=1;i<words.length();i++) {
 string[] what=string_split(words[i],"=",true);
+check_value(what);
 if (what[0]=="super") {
 super_n=string_to_number(what[1]);
 if (super_n==0) {
@@ -1368,10 +1395,11 @@ bool kp=false;
 string latesound="fail_generic";
 for (uint i=1;i<words.length();i++) {
 string[] what=string_split(words[i],"=",true);
+check_value(what);
 if (what[0]=="time") {
 time=string_to_number(what[1]);
 if (time==0) {
-alert("Time error","time cannot be 0. Line "+curline+": "+lines[curline]);
+alert("Time error","time cannot be 0. Line "+curline+": "+lines[curline-1]);
 exit();
 }
 }
@@ -1593,7 +1621,7 @@ if (temp.end!=0) actiontimes.insert_last(temp.end);
 actions.insert_last(temp);
 }//action word
 else if (words[0]=="seek" && tutorial) {
-if (words.length()!=2 or string_to_number(words[2])>tutem.length) {
+if (words.length()!=2 or string_to_number(words[1])>tutem.length) {
 alert("seek error","bad seek at line "+curline+".");
 exit();
 }
@@ -1604,6 +1632,7 @@ tutem.seek(string_to_number(words[1]));
 else if (words[0]=="debug" && !tutorial) {
 for (uint i=1;i<words.length();i++) {
 string[] what=string_split(words[i],"=",true);
+check_value(what);
 if (what[0]=="seek" and creatingpack) {
 seek=string_to_number(what[1]);
 if (seek==0) {
@@ -1627,10 +1656,12 @@ string freq;
 string preset;
 for (uint i=1;i<words.length();i++) {
 string[] what=string_split(words[i],"=",true);
+check_value(what);
 if (what[0]=="time") {
 time=string_to_number(what[1]);
 if (time==0) {
-alert("Time error","time cannot be 0. Line "+curline+": "+lines[curline]);
+alert("Time error","time cannot be 0. Line "+curline+": "+lines[curline-1]);
+exit();
 }
 }//volume
 else if (what[0]=="ach") {
@@ -1687,6 +1718,7 @@ temp.failreq=freq;
 sounds.insert_last(temp);
 }//play word
 else if (words[0]=="music" && tutorial) {
+check_parts(words,2,"music file, then optionally volume and a seek position");
 tutem.load(words[1]);
 if (!tutem.active) {
 alert("tutorial error","tutorial music not found. line "+curline);
@@ -1727,6 +1759,7 @@ if (music.playing) music.stop();
 else if (words[0]=="music" && !tutorial) {
 for (uint i=1;i<words.length();i++) {
 string[] what=string_split(words[i],"=",true);
+check_value(what);
 if (what[0]=="volume") {
 lev_vol=string_to_number(what[1]);
 }//volume
@@ -1759,16 +1792,22 @@ ln=what[1];
 }
 }//music for
 }//music word
-else if (words[0]=="!" or words[0]=="@" && !tutorial) {
+else if ((words[0]=="!" or words[0]=="@") && !tutorial) {
+// Check the element count before reading words[1]/words[2], so a short macro line shows the alert below
+// instead of crashing with an out-of-range index.
+if (words[0]=="@" and words.length()!=3) {
+alert("bad reference sintax","Line "+curline+": A macro reference command must have 3 elements: @ macroname time");
+exit();
+}
+if (words[0]=="!" and words.length()<=2) {
+alert("bad macro","You have malformed macro sintax on line "+curline);
+exit();
+}
 string macros=words[1];
 string macrot=words[2];
 string macre="";
 string[] typecheck=string_split(words[2],",",true);
 if (words[0]=="@") {
-if (words.length()!=3) {
-alert("bad reference sintax","Line "+curline+": A macro reference command must have 3 elements: @ macroname time");
-exit();
-}
 if (!macrod.exists(words[1])) {
 alert("Bad reference","Line "+curline+": You are referring to macro "+words[1]+", which is unknown.");
 exit();
@@ -1778,10 +1817,6 @@ macrod.get(words[1],macros);
 }
 }
 else {
-if (words.length()<=2) {
-alert("bad macro","You have malformed macro sintax on line "+curline);
-exit();
-}
 if (words.length()>3) {
 string built=words[1];
 macrod.set(words[3],built);
