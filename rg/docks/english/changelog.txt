@@ -1,4 +1,5 @@
 ﻿New in 1.4.
+Fixed a slight delay that could happen the first time a level played several sounds together on one note.
 Tap tempo in the level tool works again, and you can now cancel it with escape.
 Tutorials now respond to q and escape while they are playing example sounds.
 Fixed levels with similar names sometimes showing each other's rating in the level select. In some cases, improving your score on one of them could also erase the other's saved result.

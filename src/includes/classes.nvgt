@@ -5,32 +5,42 @@ class preload
 sound@ handle;
 string name;
 }
+// Preload every sound in a comma-separated list (an action can play several at once, e.g. name=a,b), so none of
+// them has to load mid-level. Returns false if any sound in the list failed to load.
 bool preload_add(string filename)
 {
-// Verify that the sound hasn't already been loaded as a preload by comparing the filenames.
 string[] files=string_split(filename,",",true);
-for (uint i=0;i<files.length();i++) {
-for(int u=0;u<preloads.length();u++)
-{
-if(preloads[u].name==files[i])
+if (files.length()==0) {
+alert("error","preload error");
 return false;
 }
+bool all=true;
+for (uint i=0;i<files.length();i++) {
+// Skip a sound that's already preloaded (compared by filename), but keep going so the rest of the list still loads.
+bool loaded=false;
+for(uint u=0;u<preloads.length();u++)
+{
+if(preloads[u].name==files[i]) {
+loaded=true;
+break;
+}
+}
+if (loaded) continue;
 sound temp;
 temp.load(files[i]);
 if(temp.active==false)
 {
 if (creatingpack) alert("sound preload error!",""+files[i]+" on line "+curline);
 if (creatingpack) exit();
-return false;
+all=false;
+continue;
 }
 preload loader;
 @loader.handle=temp;
 loader.name=files[i];
 preloads.insert_last(loader);
-return true;
 }
-alert("error","preload error");
-return false;
+return all;
 }
 // The following function resets all of the preloads.
 void reset_preloads()
