@@ -11,7 +11,7 @@ Bugs found in a full read of `src/` on **2026-09-22** (nothing fixed yet at time
 ## Bugs (most important first)
 
 1. **FIXED (2026-09-22)**: all three lookups now go through `find_level_entry()`, which compares the name field exactly. Saves that were already corrupted aren't repaired. Logged in the 1.4 changelog. Original report: **Save records mix up levels whose names share a prefix — hits shipped packs.** `set_level` / `get_level` / `get_percent` (`includes/game.nvgt` ~1976, ~2002, ~2020) match an entry with `string_left(lvl[i],level.length())==level`, a *prefix* test. Packs have `01`/`01a`, `10`/`10a`, `05`/`05a`/`05b`/`05c` (retro_world, hardcore, default). Scenario: pass `01`, pass `01a`, then improve `01` — `set_level` removes the old `01` entry and appends the new one at the END, so `get_level("01")` now finds `01a===…` first and shows 01a's rating; the next improvement to `01` deletes 01a's record. Fix: compare the part before the first `===` exactly.
-2. **Tutorial timed `play` busy-waits with no `wait()`.** In `startlev()`, `play <sound> <time>` while `tutem.position` hasn't reached the time does `i--; continue;` (~1015-1021) with no yield — q/escape are dead during the wait and a CPU core is pinned. Same trap as [[nvgt-busy-loop-needs-wait]].
+2. **FIXED (2026-09-22)**: `wait(3)` added before `i--; continue;`. Logged in 1.4. Original report: **Tutorial timed `play` busy-waits with no `wait()`.** In `startlev()`, `play <sound> <time>` while `tutem.position` hasn't reached the time does `i--; continue;` (~1015-1021) with no yield — q/escape are dead during the wait and a CPU core is pinned. Same trap as [[nvgt-busy-loop-needs-wait]].
 3. **Tutorial start sound likely replays at tutorial end.** The parser's two-pass loop (`for (uint i=1;i<3;i++)`, ~963): on pass 2 `tutorial` is still true, so `tutes.play_wait()` (~966) runs again before the empty-string `break`, then `loadlev` plays `tut_end`. Possibly BGT-faithful — confirm with the dev before "fixing".
 4. **`preload_add` only preloads the first of a comma list.** `includes/classes.nvgt` ~30: `return true;` sits inside the per-file loop, so `name=a,b` never preloads `b` (loaded on first play → possible mid-level hitch). The duplicate-check `return false` also aborts the rest of the list.
 5. **Level-script typos crash (index out of range) instead of showing the friendly alert** — author-facing only:
@@ -19,6 +19,10 @@ Bugs found in a full read of `src/` on **2026-09-22** (nothing fixed yet at time
    - Macro branch reads `words[1]`/`words[2]` (~1760-1761) before the `words.length()` checks.
    - Tutorial `seek` (~1593) tests `string_to_number(words[2])` when `words.length()==2` → always crashes. Undocumented and unused by any pack (latent).
    - `words[0]=="!" or words[0]=="@" && !tutorial` (~1759): `&&` binds tighter, so `!` macros are processed inside tutorials too.
+
+6. **FIXED (2026-09-22)**: `wait(3)` at the loop top, escape cancels (stops music, no mark saved), both removals use index 0, and the average is `sum/length`. Logged in 1.4. Original report: **Level tool tap tempo busy-loops with no `wait()` and likely hangs.** `lt.nvgt` ~306-340 (b → "tap tempo"): the `while(true)` loop only ends after 10 **h** taps, but never yields. Per [[nvgt-busy-loop-needs-wait]], `key_pressed(KEY_H)` then never fires, so the music loops forever at 100% CPU and the tool must be force-closed. It also has no escape check. Same loop, math slips: `remove_at(0); remove_at(1);` drops taps 1 and 3 (the list shifts), and `round(avg/taps.length()-1,0)` subtracts 1ms instead of dividing by `length()-1`.
+
+**Busy-loop audit (2026-09-22):** every `while`/`continue`-driven loop in `src/` (game, shared includes, `lt.nvgt`) was checked. Only #2 and #6 lack a yield. The enhanced_menu `continue`s are one-shot per key press and reach `wait(5)` next pass, so they're fine.
 
 ## Gameplay / robustness risks (design calls — ask the dev before changing)
 

@@ -304,22 +304,33 @@ wait(1500);
 timer tapping;
 double[] taps;
 while(true){
+// NVGT needs a short yield each iteration so it can pump input; without it the h taps never register and this
+// loop can never end.
+wait(3);
 if (!music.playing) {
 music.seek(cpos);
 music.play();
+}
+if (key_pressed(KEY_ESCAPE)) {
+music.stop();
+if (lang==1) rd.say("tap tempo cancelled.");
+if (lang==2) rd.say("tap tempo cancelado.");
+break;
 }
 if (key_pressed(KEY_H)) {
 taps.insert_last(tapping.elapsed);
 tapping.restart();
 }
 if (taps.length()>=10) {
+// Drop the first two gaps: the first is measured from when the loop started, not from a tap. Both removals use
+// index 0 because the list shifts down after each one.
 taps.remove_at(0);
-taps.remove_at(1);
+taps.remove_at(0);
 double avg=0;
 for (uint i=0;i<taps.length();i++) {
 avg+=taps[i];
 }
-avg=round(avg/taps.length()-1,0);
+avg=round(avg/taps.length(),0);
 music.stop();
 rd.say("stop!");
 wait(500);

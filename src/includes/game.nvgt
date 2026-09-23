@@ -1016,6 +1016,9 @@ if (tutem.position>=string_to_number(words[2])) {
 pool.play_stationary(words[1],false);
 }
 else {
+// Not time for this cue yet: re-run the same line. The short yield lets NVGT pump input so q/escape still work
+// while a tutorial waits between cues, and stops this from pinning a CPU core.
+wait(3);
 i--;
 continue;
 }
