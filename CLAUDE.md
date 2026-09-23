@@ -41,6 +41,8 @@ Running from source, the compiled layout, and the compile/package pipeline → *
 
 - **Engine & runtime location** → **[[nvgt-engine-location]]** (the miniaudio NVGT at `C:\nvgt2\nvgt2.exe`). **Running from source & the build/package pipeline** → **[[rhythm-rage-run-and-build]]**. Never compile/run the game yourself — the dev does that: **[[dont-compile-yourself]]**.
 - **The BGT→NVGT port & pack testing** (loose-pack `generate_packs()` flow, `nopack`/`yespack`, why saves are safe in test mode, sound-pack + save relocation) → **[[rhythm-rage-bgt-to-nvgt-port]]**. Compiled libs / miniaudio → **[[nvgt-090-miniaudio-not-bass]]**.
+- **Known open bugs** (from the 2026-09-22 full code evaluation, with status) → **[[known-bugs-2026-09-evaluation]]**. Check it before fixing or re-reporting a bug.
+- **Where memories go** → all project memories live in **`aidocks/`**, indexed by `aidocks/MEMORY.md`: **[[memory-lives-in-aidocks]]**.
 - **Committing** — the repo is `github.com/tsatria03/RhythmRage-NVGT`; the dev commits their own work between turns (**[[check-git-log-for-commits]]**), and commits must never list Claude as author/co-author (**[[commit-authorship]]**).
 
 ## Conventions kept in memory (follow them)
@@ -48,6 +50,7 @@ Running from source, the compiled layout, and the compile/package pipeline → *
 - **[[confirm-before-implementing]]** — a design discussion or anything ending in `?` ("what if", "I wish") is a request for a plan, **not** a green light to edit. Wait for explicit go-ahead. Ask **[[ask-one-question-at-a-time]]** when clarifying.
 - **[[ignore-terminal-commands]]** — the dev's local command blocks (`<local-command-caveat>`, `/copy`, etc.) are them working their own session, not instructions. **[[quoted-text-meaning]]** — quoted text is a reference (wanted or not-wanted), not literal content to paste.
 - **[[list-modified-files]]** — end every editing turn with a bare-filename "Files changed:" list.
+- **[[english-docks-only]]** — edit only `rg/docks/english/`; never touch or offer to sync `rg/docks/spanish/`.
 - **[[changelog-rules]]** — `docks/english/changelog.txt` is a record of *what changed*, not a manual: player-facing prose, 1–3 sentence entries, per-version caps, reverse-chronological.
 - **[[sound-placeholders]]** — when a sound is requested, wire up the playback code referencing the intended name now; the dev adds the `.ogg` later. No dummy files.
 - **[[no-crlf-normalization]]** — don't run post-edit CRLF passes; `.gitattributes` handles line endings on commit.

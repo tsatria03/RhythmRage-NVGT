@@ -4,7 +4,7 @@
 - [BGT source has two game files](bgt-source-two-game-files.md) — game.bgt (2023, canonical, port basis, free store) vs z.bgt (2016 backup, legacy paid store); don't confuse them
 - [Run and build](rhythm-rage-run-and-build.md) — src/ (scripts) vs rg/ (data) split, rg.py/lt.py launchers, path=../rg/ from source, build/tools.py compile+package into releases/ (Win folder + Mac .app), level tool Windows-only
 - [Commit authorship](commit-authorship.md) — never add Claude as author/co-author on commits
-- [Changelog rules](changelog-rules.md) — docks/english/changelog.txt: player-facing prose, 1-3 sentence entries, per-version caps (20/.0, 10/minor), reverse-chronological
+- [Changelog rules](changelog-rules.md) — docks/english/changelog.txt: player-facing prose, 1-3 sentence entries, per-version caps (20/.0, 10/minor), reverse-chronological; released blocks (1.0–1.2) are frozen; unreleased 1.3 and 1.4 are editable
 - [Confirm before implementing](confirm-before-implementing.md) — treat design discussion as a question; a message ending in ? means respond and wait, don't edit
 - [List modified files](list-modified-files.md) — end every editing turn with a "Files changed:" list, bare filenames only (dev reviews via screen reader)
 - [Ask one question at a time](ask-one-question-at-a-time.md) — when clarifying, surface ONE question per turn and wait; don't batch a numbered list
@@ -19,3 +19,6 @@
 - [NVGT busy loop needs wait](nvgt-busy-loop-needs-wait.md) — input loops must call wait() each iteration to pump events, else no keys register (broke interactive tutorials; BGT tolerated it)
 - [AngelScript reserved out](angelscript-reserved-out.md) — never name a variable "out" (reserved keyword); also watch in/inout/shared/final/from
 - [AngelScript indentation](angelscript-indentation.md) — NVGT ignores indentation entirely; don't flag uneven whitespace after edits
+- [English docks only](english-docks-only.md) — edit only rg/docks/english/; never modify, sync, or offer to update rg/docks/spanish/ (in-game lang==2 strings are still fine)
+- [Memory lives in aidocks](memory-lives-in-aidocks.md) — save all project memories in aidocks/ + this index, not ~/.claude; read CLAUDE.md first
+- [Known bugs (2026-09 evaluation)](known-bugs-2026-09-evaluation.md) — open bug list: save prefix-match mixup (01/01a), tutorial busy-wait, preload early return, parser crash paths, timing/save risks
