@@ -1966,18 +1966,21 @@ achs.play();
 ser();
 }
 }
+// Index of a level's saved entry ("name===tier" or "name===tier===percent") in a pack's split record list, or -1.
+// Matches the name field exactly: a prefix test would let level 01 grab 01a's entry (packs ship 01/01a, 10/10a,
+// 05/05a/05b/05c), showing the wrong rating and letting a save of one level delete the other's record.
+int find_level_entry(string[]@ lvl,string level) {
+for (uint i=0;i<lvl.length();i++) {
+string[] parts=string_split(lvl[i],"===",true);
+if (parts.length()>=2 and parts[0]==level) return int(i);
+}
+return -1;
+}
 void set_level(string level,string value,string pack,int percent=-1) {
-int whichone=-1;
 string info;
 ok=unlockinfo.get(pack+".pack",info);
 string[] lvl=string_split(info,",,,",true);
-
-for (uint i=0;i<lvl.length();i++) {
-if (string_left(lvl[i],level.length())==level) {
-whichone=i;
-break;
-}
-}
+int whichone=find_level_entry(lvl,level);
 if (whichone!=-1) {
 lvl.remove_at(whichone);
 }
@@ -1998,30 +2001,20 @@ int get_percent(string level) {
 string info;
 if (!unlockinfo.get(pack+".pack",info)) return -1;
 string[] lvl=string_split(info,",,,",true);
-for (uint i=0;i<lvl.length();i++) {
-if (string_left(lvl[i],level.length())==level) {
-string[] parts=string_split(lvl[i],"===",true);
+int whichone=find_level_entry(lvl,level);
+if (whichone==-1) return -1;
+string[] parts=string_split(lvl[whichone],"===",true);
 if (parts.length()>=3) return string_to_number(parts[2]);
 return -1;
 }
-}
-return -1;
-}
 int get_level(string level) {
-int whichone=-1;
 string info;
-string[] test=unlockinfo.get_keys();
 ok=unlockinfo.get(pack+".pack",info);
 if (!ok) {
 return 0;
 }
 string[] lvl=string_split(info,",,,",true);
-for (uint i=0;i<lvl.length();i++) {
-if (string_left(lvl[i],level.length())==level) {
-whichone=i;
-break;
-}
-}
+int whichone=find_level_entry(lvl,level);
 if (whichone!=-1) {
 return string_to_number(string_split(lvl[whichone],"===",true)[1]);
 }

@@ -21,4 +21,4 @@
 - [AngelScript indentation](angelscript-indentation.md) — NVGT ignores indentation entirely; don't flag uneven whitespace after edits
 - [English docks only](english-docks-only.md) — edit only rg/docks/english/; never modify, sync, or offer to update rg/docks/spanish/ (in-game lang==2 strings are still fine)
 - [Memory lives in aidocks](memory-lives-in-aidocks.md) — save all project memories in aidocks/ + this index, not ~/.claude; read CLAUDE.md first
-- [Known bugs (2026-09 evaluation)](known-bugs-2026-09-evaluation.md) — open bug list: save prefix-match mixup (01/01a), tutorial busy-wait, preload early return, parser crash paths, timing/save risks
+- [Known bugs (2026-09 evaluation)](known-bugs-2026-09-evaluation.md) — bug list with status: save prefix-match mixup (01/01a, FIXED), tutorial busy-wait, preload early return, parser crash paths, timing/save risks

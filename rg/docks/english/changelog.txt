@@ -1,4 +1,5 @@
 ﻿New in 1.4.
+Fixed levels with similar names sometimes showing each other's rating in the level select. In some cases, improving your score on one of them could also erase the other's saved result.
 Pressing tab in the level select now also tells you your pack mastery. This is a single percentage covering your best score on every level, and it starts once you have completed a level.
 The level select now announces your best score percentage on each level you have played, right before its rating.
 After finishing a level, you can now press enter during the score calculation to skip the suspense and jump straight to your result.
