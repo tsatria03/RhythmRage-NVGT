@@ -20,6 +20,9 @@ rg/data/assets/
 
 # Local player save (the dev's own profile, written here when testing from source) - never commit or ship
 rg/data/saves/rg.dat
+# ...plus its safe-save companions: the new save being written, and the previous save kept as a backup
+rg/data/saves/rg.dat.tmp
+rg/data/saves/rg.dat.bak
 
 # Generated pack-downloader index (built by tools.py from the app-data packs, uploaded to the VPS root) - not source
 rg/pack_index.txt

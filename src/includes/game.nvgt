@@ -1,7 +1,9 @@
+bool loadingsave=false;   // true while deser() rebuilds level records, so set_level() doesn't save once per level mid-load
 void ser() {
 if (creatingpack) {
 return;
 }
+if (loadingsave) return;
 //if (!SCRIPT_COMPILED) return;
 dictionary data;
 data.set("cash",cash);
@@ -30,20 +32,51 @@ for (uint u=0;u<savea.length();u++) {
 data.set("achievements",achievements);
 string srld=serialize(data);
 string esrld=string_encrypt(srld,"soyelputoamo");
+// Never overwrite the save in place: a crash or power cut mid-write would leave a half-written rg.dat and lose all
+// progress. Write the new save to rg.dat.tmp first and only swap it in once it's fully written. The previous save
+// is kept as rg.dat.bak, and deser() falls back to .tmp and then .bak if rg.dat is missing or damaged.
+string savefile=path+"data/saves/rg.dat";
 file fld;
-fld.open(path+"data/saves/rg.dat","wb");
-fld.write(esrld);
+if (!fld.open(savefile+".tmp","wb")) return;
+uint written=fld.write(esrld);
 fld.close();
+if (written!=esrld.length()) {
+file_delete(savefile+".tmp");
+return;
+}
+// file_move won't overwrite, so clear the way first: old backup out, current save becomes the backup, new save in.
+if (file_exists(savefile+".bak")) file_delete(savefile+".bak");
+if (file_exists(savefile)) file_move(savefile,savefile+".bak");
+if (!file_move(savefile+".tmp",savefile)) file_copy(savefile+".tmp",savefile,true);
+}
+// Read and decode one save file. Returns null if it's missing, empty, or damaged, so deser() can try the next copy.
+// deserialize() throws on a save cut off partway through, so that's caught here rather than crashing the game.
+dictionary@ read_save(string filename) {
+if (!file_exists(filename)) return null;
+file fld;
+if (!fld.open(filename,"rb")) return null;
+string dsr=fld.read();
+fld.close();
+if (dsr=="") return null;
+dictionary@ data=null;
+try {
+@data=deserialize(string_decrypt(dsr,"soyelputoamo"));
+} catch {
+return null;
+}
+// Unreadable data deserializes to an empty dictionary rather than null; a real save always has keys.
+if (@data==null or data.get_keys().length()==0) return null;
+return data;
 }
 void deser() {
 cash=0;
 unlocks="default.pack,";
-if(file_exists(path+"data/saves/rg.dat")) {
-file fld;
-fld.open(path+"data/saves/rg.dat","rb");
-string dsr=fld.read();
-dsr=string_decrypt(dsr,"soyelputoamo");
-dictionary data=deserialize(dsr);
+string savefile=path+"data/saves/rg.dat";
+// Newest first: rg.dat, then a fully written .tmp left by an interrupted swap, then the previous save in .bak.
+dictionary@ data=read_save(savefile);
+if (@data==null) @data=read_save(savefile+".tmp");
+if (@data==null) @data=read_save(savefile+".bak");
+if (@data!=null) {
 string[] datas=data.get_keys();
 for (uint i=0;i<datas.length();i++) {
 }
@@ -72,6 +105,10 @@ if (data.exists("unlocks"))
 data.get("unlocks",unlocks);
 if (unlocks=="") unlocks+="default.pack,";
 string[] levels=string_split(unlocks,".pack,",true);
+// set_level() normally saves after every change. Hold that off while rebuilding, so a half-loaded profile is never
+// written over the good copy, then save once at the end. That also makes a save recovered from .tmp/.bak the main
+// rg.dat again.
+loadingsave=true;
 int curl;
 for (uint i=0;i<levels.length();i++) {
 curl=i;
@@ -87,9 +124,13 @@ else set_level(lvln[0],lvln[1],levels[curl]);
 }
 }
 }
+loadingsave=false;
+ser();
 }
 else {
-ser();
+// No readable save anywhere. Only create a fresh one when there's truly nothing on disk; if damaged files exist,
+// leave them alone until the next real save, so they can still be recovered by hand.
+if (!file_exists(savefile) and !file_exists(savefile+".tmp") and !file_exists(savefile+".bak")) ser();
 }
 }
 // First-letter search over a list of pack filenames: next entry (cycling from current) starting with letter, else -1.
