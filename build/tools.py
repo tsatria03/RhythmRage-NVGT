@@ -33,11 +33,12 @@ APPDATA_PACKS = os.path.join(os.environ.get("APPDATA", ""), "Oriol Gomez", "Rhyt
 # ship (see _copy_default_sources), so the game can compile the defaults offline when it can't download them.
 SHIP      = ["data", "docks"]
 
-# copytree ignore callback for _copy_ship: drops rg.dat (the dev's save) and any .gitkeep, anywhere.
+# copytree ignore callback for _copy_ship: drops the dev's save (rg.dat, plus the rg.dat.tmp/rg.dat.bak the
+# safe-save swap leaves beside it) and any .gitkeep, anywhere.
 def _ship_ignore(src_dir, names):
     ignored = set()
     for n in names:
-        if n.lower() in ("rg.dat", ".gitkeep"):
+        if n.lower() in ("rg.dat", "rg.dat.tmp", "rg.dat.bak", ".gitkeep"):
             ignored.add(n)
     return ignored
 
