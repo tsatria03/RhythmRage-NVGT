@@ -34,6 +34,8 @@ Bugs found in a full read of `src/` on **2026-09-22** (nothing fixed yet at time
 
 ## Maintainability notes (not bugs)
 
+The full refactor plan for these, with the recommended fix, risks, tests and status for each, lives in [[code-structure-plan]]. Track progress there, not here.
+
 144 paired `if (lang==1)`/`if (lang==2)` blocks (a string table would help; player-facing typos "Pitty", "sintax"); the ~40-line key-name→`KEY_*` chain is duplicated (~1192 and ~1402); the arrow/first-letter pack browser is copy-pasted ~5×; `startlev()` is ~1,070 lines.
 
 **Doc drift FIXED (2026-09-23):** CLAUDE.md and the port and run-and-build memories said packs live in `rg/data/packs/` and that the game never reads `mypacks/`. All three now describe the app-data `packdir` and the game's `mypacks/` menu items. The same pass found that `build/tools.py` `_ship_ignore` didn't exclude the new `rg.dat.tmp`/`rg.dat.bak`, so the dev's save backup would have shipped in releases. That's fixed too. Related: [[rhythm-rage-bgt-to-nvgt-port]], [[angelscript-braceless-if]].

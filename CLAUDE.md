@@ -42,6 +42,7 @@ Running from source, the compiled layout, and the compile/package pipeline → *
 - **Engine & runtime location** → **[[nvgt-engine-location]]** (the miniaudio NVGT at `C:\nvgt2\nvgt2.exe`). **Running from source & the build/package pipeline** → **[[rhythm-rage-run-and-build]]**. Never compile/run the game yourself — the dev does that: **[[dont-compile-yourself]]**.
 - **The BGT→NVGT port & pack testing** (loose-pack `generate_packs()` flow, `nopack`/`yespack`, why saves are safe in test mode, sound-pack + save relocation) → **[[rhythm-rage-bgt-to-nvgt-port]]**. Compiled libs / miniaudio → **[[nvgt-090-miniaudio-not-bass]]**.
 - **Known open bugs** (from the 2026-09-22 full code evaluation, with status) → **[[known-bugs-2026-09-evaluation]]**. Check it before fixing or re-reporting a bug.
+- **Code structure refactor plan** (5 ranked refactors, recommended fix, risks, test plan and status for each) → **[[code-structure-plan]]**. Read it before restructuring `startlev`/`loadlev`, the list browsers, the bilingual strings, or screen navigation.
 - **Where memories go** → all project memories live in **`aidocks/`**, indexed by `aidocks/MEMORY.md`: **[[memory-lives-in-aidocks]]**.
 - **Committing** — the repo is `github.com/tsatria03/RhythmRage-NVGT`; the dev commits their own work between turns (**[[check-git-log-for-commits]]**), and commits must never list Claude as author/co-author (**[[commit-authorship]]**).
 
