@@ -1,4 +1,5 @@
 ﻿New in 1.5.
+The keyboard delay setting now shifts the timing of each note to match your delay, instead of making the timing window wider. Calibration is also more accurate, since it now counts presses slightly before the beep too.
 Your progress is now saved more safely, so a crash or power cut while saving can no longer wipe it. The game also keeps a backup of your previous save and uses it if your main save is ever damaged.
 Pack creators now get an error message for level script mistakes that used to crash the game. This covers things like a setting with no value, or a command that is missing some of its parts.
 New in 1.4.

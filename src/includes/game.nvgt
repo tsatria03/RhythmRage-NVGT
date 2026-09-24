@@ -664,7 +664,10 @@ if (cooldown) cooler.resume();
 if (iskey(keys[0]) && lasta!=100000000 and keys_down().length()==1) {
 if (!cooldown) {
 if (keys[0]==lastak && lasta!=100000000) {
-double distance=music.position-lasta;
+// The keyboard delay (keycal) shifts where each note is judged rather than widening the window: a player whose
+// presses land consistently late by keycal ms gets the same ±window as everyone else, centred on where they
+// actually press. Interactive tutorials already judge this way (time+75+keycal).
+double distance=music.position-lasta-keycal;
 if (distance<=-timewindow*2.5) {
 actions[lastan].badkey();
 }
@@ -689,7 +692,7 @@ lasta=100000000;
 }
 else {
 if (actions.length()>0 && lasta!=100000000) {
-double distance=music.position-lasta;
+double distance=music.position-lasta-keycal;
 actions[lastan].badkey();
 if (distance>-timewindow*3 && distance<=timewindow*3) {
 //do nothing
@@ -703,7 +706,7 @@ lasta=100000000;
 if (lasta!=100000000 and key_released(actions[lastan].key) and actions[lastan].type==2 and actions[lastan].held) {
 if (!debugmode) {
 actions[lastan].stop();
-double distance=music.position-actions[lastan].end;
+double distance=music.position-actions[lastan].end-keycal;   // release is judged with the same keyboard-delay shift
 if (distance<=-timewindow) {
 actions[lastan].efail();
 actions.remove_at(lastan);
@@ -741,7 +744,8 @@ lasta=100000000;
 }
 continue;
 }
-if ((music.position>lasta+timewindow/2+10 && actions[lastan].type==1) or (music.position>actions[lastan].end+timewindow/2+10 && (actions[lastan].type==2 and actions[lastan].held) or (actions[lastan].type==2 and !actions[lastan].held and music.position>=lasta+timewindow/2+10))) {
+// Timeouts wait the same keycal shift, so a delayed-but-on-time press isn't failed before it arrives.
+if ((music.position>lasta+keycal+timewindow/2+10 && actions[lastan].type==1) or (music.position>actions[lastan].end+keycal+timewindow/2+10 && (actions[lastan].type==2 and actions[lastan].held) or (actions[lastan].type==2 and !actions[lastan].held and music.position>=lasta+keycal+timewindow/2+10))) {
 if (!debugmode) {
 if (actions[lastan].type==1) {
 actions[lastan].fail();
@@ -914,7 +918,7 @@ strict=false;
 debugmode=false;
 super_n=91;
 ok_n=70;
-timewindow=150+keycal;
+timewindow=150;   // the keyboard delay no longer widens this; the level loop shifts each note by keycal instead
 cooltime=0;
 unlockeda=0;
 totala=0;
@@ -1400,7 +1404,7 @@ exit();
 }
 }
 else if (what[0]=="reaction") {
-timewindow=string_to_number(what[1])+keycal;
+timewindow=string_to_number(what[1]);
 if (!string_is_digits(what[1])) {
 if (lang==1) alert("error","reaction value is set wrong.");
 if (lang==2) alert("error","el valor de reaction no se ha configurado bien.");
@@ -2139,21 +2143,26 @@ press.restart();
 beep.play();
 beep_started=true;
 }
+// Measure each press against the NEAREST beep, early or late. Beeps come every 500ms, so a press up to 250ms after
+// a beep is late by that much, and a later one is early for the next beep. Only counting presses after a beep (as
+// this used to) threw away every slightly early press and biased the result late, even on a machine with no delay.
 if (beep_started && key_pressed(KEY_SPACE)) {
-if (press.elapsed<200) {
-presses.insert_last(press.elapsed);
-}
+double offset=press.elapsed;
+if (offset>250) offset-=500;
+presses.insert_last(offset);
 }
 }
 presses.remove_at(0);
 presses.remove_at(0);
-double avg=0;
-for (uint i=0;i<presses.length();i++) {
-avg+=presses[i];
-}
-avg=avg/presses.length();
-avg=round(avg,0);
-keycal=avg;
+// Take the median rather than the average, so one fumbled or double press can't drag the result off.
+presses.sort_ascending();
+uint mid=presses.length()/2;
+double delay=presses[mid];
+if (presses.length()%2==0) delay=(presses[mid-1]+presses[mid])/2;
+delay=round(delay,0);
+// It's a delay: a player who habitually presses a little early gets 0, not a negative shift.
+if (delay<0) delay=0;
+keycal=delay;
 if (lang==1) rd.add("your keyboard delay is "+keycal+"ms. Press enter to go back to the menus.",false,true);
 if (lang==2) rd.add("tu retraso del teclado es de "+keycal+"ms. Pulsa enter para volver a los menús.",false,true);
 start();
