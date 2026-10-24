@@ -78,7 +78,7 @@ This lets you configure many things in your level. You can currently modify the 
 - super: The minimum percentage of good actions that you must obtain to get a super (maximum is always 99), default is 94).
 - ok: The least percentage to obtain an ok and unlock the next level (max is always 1 less than super, default minimum is 80).
 - cooldown: If you want your level to freeze for a bit before being able to do another action when you fail or press a wrong key, set a cooldown value greater than 0 in milliseconds (default is 0).
-- reaction: The time that a user has to press actions in this level (default is 150 which means 75ms too early and 75 too late).
+- reaction: The time that a user has to press actions in this level (default is 150). A press within half of it either side of the note is a hit, so about 75ms early or late at the default. A press later than that, up to the full reaction time after the note, counts as late. An earlier one, up to 2.5 times the reaction time before the note, counts as early.
 
 ### debug
 

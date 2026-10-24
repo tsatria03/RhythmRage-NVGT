@@ -524,6 +524,37 @@ waited+=5;
 }
 return false;
 }
+// Find the waiting note a press of key belongs to: the one with that key closest in time to the press, counting
+// the keyboard delay shift. Only notes inside the judging range count (early from timewindow*2.5 before, late up to
+// timewindow after). A hold that is already being held isn't waiting for a press, and notes before a creator-mode
+// seek point are skipped, like the loop's own scan. Returns the index into actions, or -1 when nothing is in range.
+// Judging against the nearest note means a late press lands on its own note instead of counting as early on the
+// next one with the same key.
+int nearest_action(int key) {
+int found=-1;
+double best=0;
+for (uint i=0;i<actions.length();i++) {
+if (actions[i].key!=key) continue;
+if (actions[i].type==2 && actions[i].held) continue;
+if (actions[i].duration<seek) continue;
+double distance=music.position-actions[i].duration-keycal;
+if (distance<=-timewindow*2.5 or distance>timewindow) continue;
+double away=abs(distance);
+if (found==-1 or away<best or (away==best && actions[i].duration<actions[found].duration)) {
+found=i;
+best=away;
+}
+}
+return found;
+}
+// The tap-and-hold note currently being held, or -1. Only one can be held at a time, since a press only counts
+// while it is the only key down.
+int held_action() {
+for (uint i=0;i<actions.length();i++) {
+if (actions[i].type==2 && actions[i].held) return i;
+}
+return -1;
+}
 void loadlev(string name,int volume) {
 perfect=true;
 if (tutorial) {
@@ -663,68 +694,61 @@ if (cooldown) cooler.resume();
 }
 if (iskey(keys[0]) && lasta!=100000000 and keys_down().length()==1) {
 if (!cooldown) {
-if (keys[0]==lastak && lasta!=100000000) {
-// The keyboard delay (keycal) shifts where each note is judged rather than widening the window: a player whose
-// presses land consistently late by keycal ms gets the same ±window as everyone else, centred on where they
-// actually press. Interactive tutorials already judge this way (time+75+keycal).
-double distance=music.position-lasta-keycal;
-if (distance<=-timewindow*2.5) {
+// Judge the press against the nearest waiting note with that key, not just the earliest note overall. So a late
+// press counts as late on its own note, and the next note with that key can still be hit. The keyboard delay
+// (keycal) shifts where each note is judged rather than widening the window: a player whose presses land
+// consistently late by keycal ms gets the same ±window as everyone else, centred on where they actually press.
+// Interactive tutorials already judge this way (time+75+keycal).
+int target=nearest_action(keys[0]);
+if (target==-1) {
+// wrong key, or no note with this key close enough: the miss sound, but nothing is counted
 actions[lastan].badkey();
 }
-else if (distance>=-timewindow*2.5+1 && distance<=-timewindow/2-10) {
-actions[lastan].early();
-actions.remove_at(lastan);
-lasta=100000000;
-lastan=-1;
+else {
+double distance=music.position-actions[target].duration-keycal;
+if (distance<=-timewindow/2-10) {
+actions[target].early();
+actions.remove_at(target);
 }
-else if (distance>=timewindow/2 && distance<timewindow/2+10) {
-actions[lastan].late();
-actions.remove_at(lastan);
-lasta=100000000;
+else if (distance>=timewindow/2) {
+actions[target].late();
+actions.remove_at(target);
 }
 else {
-actions[lastan].play();
-if (actions[lastan].type==1) {
-actions.remove_at(lastan);
+actions[target].play();
+if (actions[target].type==1) actions.remove_at(target);
+}
+}
+// The notes list may have changed, so rescan for the earliest note next time around.
 lasta=100000000;
 }
 }
 }
-else {
-if (actions.length()>0 && lasta!=100000000) {
-double distance=music.position-lasta-keycal;
-actions[lastan].badkey();
-if (distance>-timewindow*3 && distance<=timewindow*3) {
-//do nothing
-}
-}
-}
-lasta=100000000;
-}
-}
-}
-if (lasta!=100000000 and key_released(actions[lastan].key) and actions[lastan].type==2 and actions[lastan].held) {
+// Find the hold being held directly rather than assuming it's the earliest note: with nearest-note judging, a hold
+// can be started while an earlier tap is still waiting out its late band.
+int heldn=held_action();
+if (lasta!=100000000 and heldn!=-1 and key_released(actions[heldn].key)) {
 if (!debugmode) {
-actions[lastan].stop();
-double distance=music.position-actions[lastan].end-keycal;   // release is judged with the same keyboard-delay shift
+actions[heldn].stop();
+double distance=music.position-actions[heldn].end-keycal;   // release is judged with the same keyboard-delay shift
 if (distance<=-timewindow) {
-actions[lastan].efail();
-actions.remove_at(lastan);
+actions[heldn].efail();
+actions.remove_at(heldn);
 lasta=100000000;
 }
 else if (distance>=-timewindow+1 && distance<=-timewindow/2) {
-actions[lastan].efail();
-actions.remove_at(lastan);
+actions[heldn].efail();
+actions.remove_at(heldn);
 lasta=100000000;
 }
 else if (distance>=timewindow/2) {
-actions[lastan].efail();
-actions.remove_at(lastan);
+actions[heldn].efail();
+actions.remove_at(heldn);
 lasta=100000000;
 }
 else {
-actions[lastan].release();
-actions.remove_at(lastan);
+actions[heldn].release();
+actions.remove_at(heldn);
 lasta=100000000;
 }
 }
@@ -744,8 +768,10 @@ lasta=100000000;
 }
 continue;
 }
-// Timeouts wait the same keycal shift, so a delayed-but-on-time press isn't failed before it arrives.
-if ((music.position>lasta+keycal+timewindow/2+10 && actions[lastan].type==1) or (music.position>actions[lastan].end+keycal+timewindow/2+10 && (actions[lastan].type==2 and actions[lastan].held) or (actions[lastan].type==2 and !actions[lastan].held and music.position>=lasta+keycal+timewindow/2+10))) {
+// Timeouts wait the same keycal shift, so a delayed-but-on-time press isn't failed before it arrives. A tap, or a
+// hold that hasn't been started, waits out the whole late band (up to timewindow after the note) so a late press
+// can still land on it. A hold being held keeps its old release timeout.
+if ((music.position>lasta+keycal+timewindow && actions[lastan].type==1) or (music.position>actions[lastan].end+keycal+timewindow/2+10 && (actions[lastan].type==2 and actions[lastan].held) or (actions[lastan].type==2 and !actions[lastan].held and music.position>lasta+keycal+timewindow))) {
 if (!debugmode) {
 if (actions[lastan].type==1) {
 actions[lastan].fail();

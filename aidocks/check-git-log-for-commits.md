@@ -12,4 +12,6 @@ The dev commits changes themselves. Before asking "want me to commit?" or assumi
 
 **Why:** they've been mildly annoyed at being asked about a commit they'd already made; the git log is the source of truth for what's landed. (RhythmRage is now a git repo, remote `github.com/tsatria03/RhythmRage-NVGT`.)
 
-**How to apply:** after an editing turn, run a quick `git log`/`git status` to see whether they've already committed before mentioning commits at all. Still never commit for them unless explicitly asked — and when you do commit, follow [[commit-authorship]] (no Claude author/co-author). Relates to [[list-modified-files]], [[dont-compile-yourself]].
+**Standing rule (dev, 2026-10-24): "I'll make all commits from now on, including pushing them."** Never run `git commit` or `git push`, even when a change is finished and tested. At most, suggest a commit message (they use the changelog line as the message). This overrides the earlier one-off case where they asked Claude to commit a `.gitignore` change.
+
+**How to apply:** after an editing turn, run a quick `git log`/`git status` to see whether they've already committed before mentioning commits at all. Don't commit or push for them — and when you do commit, follow [[commit-authorship]] (no Claude author/co-author). Relates to [[list-modified-files]], [[dont-compile-yourself]].
