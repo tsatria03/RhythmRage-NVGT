@@ -271,6 +271,13 @@ alert("sound error","sound error with "+this.name);
 exit();
 }
 }
+// The wrong key pressed while this note was in range: the miss sound plus a counted miss. The note itself stays
+// waiting, so pressing the right key in time can still hit it.
+void wrongkey() {
+badkey();
+bad++;
+if (killperfect) perfect=false;
+}
 void late() {
 cooldown=true; cooler.restart();
 aliases.delete(alias);

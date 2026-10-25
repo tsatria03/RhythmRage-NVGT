@@ -10,7 +10,7 @@ metadata:
 
 RhythmRage-NVGT is a port of Oriol Gomez's audio-only rhythm game from BGT (Blastbay Game Toolkit) to the new NVGT ([[nvgt-engine-location]]).
 
-**Original BGT source (reference for the port):** `C:\Users\tonys\OneDrive\Desktop\rhythm-rage bgt-src` (path confirmed 2026-09-14; was previously `Rhythm_rage BGT_src`). Contains `game.bgt`, `classes.bgt`, `leveltool.bgt`, and the original `include/` files — use it to compare behavior when porting or diagnosing divergences from the original. NVGT differs substantially from BGT, so a divergence isn't automatically a port bug.
+**Original BGT source: DELETED on purpose by the dev (confirmed 2026-10-24)**, because the NVGT port is essentially complete. It used to live at `C:\Users\tonys\OneDrive\Desktop\rhythm-rage bgt-src` (`game.bgt`, `classes.bgt`, `leveltool.bgt`, `include/`). Don't look for it, and don't offer to compare against it. The NVGT code is now the reference for how the game behaves. A deliberate change from the original (e.g. wrong-key presses now counting, 2026-10-24) needs no BGT check, just the dev's call. What's still known about the BGT versions is in [[bgt-source-two-game-files]].
 
 **Loose-pack testing behavior (important, non-obvious):**
 - `main()` must call `generate_packs()` (the BGT-faithful single-folder builder), NOT `generate_all_packs()`. The port originally used `generate_all_packs()`, which compiled a loose folder to a `.pack` but did NOT load you into it and skipped rebuilds once the `.pack` existed. `generate_all_packs()` has been removed as dead code.

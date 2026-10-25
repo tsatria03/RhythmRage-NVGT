@@ -529,12 +529,13 @@ return false;
 // timewindow after). A hold that is already being held isn't waiting for a press, and notes before a creator-mode
 // seek point are skipped, like the loop's own scan. Returns the index into actions, or -1 when nothing is in range.
 // Judging against the nearest note means a late press lands on its own note instead of counting as early on the
-// next one with the same key.
+// next one with the same key. Passing -1 for key finds the nearest waiting note on any key, which is how a wrong-key
+// press is told apart from a stray press in a quiet gap.
 int nearest_action(int key) {
 int found=-1;
 double best=0;
 for (uint i=0;i<actions.length();i++) {
-if (actions[i].key!=key) continue;
+if (key!=-1 && actions[i].key!=key) continue;
 if (actions[i].type==2 && actions[i].held) continue;
 if (actions[i].duration<seek) continue;
 double distance=music.position-actions[i].duration-keycal;
@@ -701,8 +702,12 @@ if (!cooldown) {
 // Interactive tutorials already judge this way (time+75+keycal).
 int target=nearest_action(keys[0]);
 if (target==-1) {
-// wrong key, or no note with this key close enough: the miss sound, but nothing is counted
-actions[lastan].badkey();
+// No note with this key is close enough. If a note on another key is in range, it was the wrong key for that note:
+// play the miss sound and count it as a miss, but leave the note waiting so the right key can still hit it. A stray
+// press in a quiet gap, with no note nearby, still only plays the miss sound and isn't counted.
+int nearn=nearest_action(-1);
+if (nearn!=-1) actions[nearn].wrongkey();
+else actions[lastan].badkey();
 }
 else {
 double distance=music.position-actions[target].duration-keycal;

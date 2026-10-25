@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Rhythm Rage is an **audio-only rhythm game** written in **NVGT** (Non-Visual Game Toolkit, an AngelScript-based engine). All game code is `.nvgt`. There is no visual rendering — output is screen-reader speech plus sound through NVGT's `sound_pool`. The player follows the rhythm of each level's music by pressing the right keys at the right time, and earns a percentage score (fail / ok / super / perfect).
 
-It is a **port from BGT** (Blastbay Game Toolkit, the discontinued engine the game was originally built in) to the new NVGT. The original BGT source is kept for reference — full port details, including the pack-testing behavior that differs from a naive port, are in **[[rhythm-rage-bgt-to-nvgt-port]]**.
+It is a **port from BGT** (Blastbay Game Toolkit, the discontinued engine the game was originally built in) to the new NVGT. The port is essentially complete, and the original BGT source has been deleted, so the NVGT code is now the reference. Full port details, including the pack-testing behavior that differs from a naive port, are in **[[rhythm-rage-bgt-to-nvgt-port]]**.
 
 It is **single-player and offline** (aside from an optional pack downloader). The game ships in two languages selected by the `lang` global: `1` = English ("Rhythm Rage"), `2` = Spanish ("beatstar plus"); most user-facing strings are duplicated under `if (lang==1)` / `if (lang==2)`.
 

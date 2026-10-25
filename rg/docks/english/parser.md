@@ -56,7 +56,7 @@ You can specify multiple actions to be required by sepparating them with commas,
 - fail=sound played when you make a wrong press, or you press too early. defaults to fail_generic
 - early=sound played when you press a bit too early, defaults to failsound
 - late=sound played when you press just a bit too late, as well as when you don't press in time. defaults to failsound
-- miss= sound played when you hit the key way too early, or when you press the wrong key. defaults to failsound
+- miss= sound played when you hit the key way too early, or when you press the wrong key. defaults to failsound. A wrong key pressed while a note is in its timing range also counts as a miss, but a stray press with no note nearby only plays this sound.
 - kp: indicates that this action is important and if you fail it, you will not be able to get a perfect or a super.
 - pitch=0-100
 - volume=0- minus20
