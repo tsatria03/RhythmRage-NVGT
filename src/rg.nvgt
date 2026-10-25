@@ -58,6 +58,8 @@ dictionary unlockinfo;
 string[] unlocked;
 string[] lockedlevels;
 int[] akeys={KEY_RETURN,KEY_SPACE,KEY_UP,KEY_DOWN,KEY_RIGHT,KEY_LEFT,KEY_1,KEY_2,KEY_3,KEY_4,KEY_5,KEY_6,KEY_7,KEY_8,KEY_9,KEY_0,KEY_A,KEY_B,KEY_C,KEY_D,KEY_E,KEY_F,KEY_G,KEY_H,KEY_I,KEY_J,KEY_K,KEY_L,KEY_M,KEY_N,KEY_O,KEY_P,KEY_Q,KEY_R,KEY_S,KEY_T,KEY_U,KEY_V,KEY_W,KEY_X,KEY_Y,KEY_Z};
+// The name a level script uses for each key above, in exactly the same order as akeys (key_from_name relies on it).
+string[] akeynames={"enter","space","up","down","right","left","1","2","3","4","5","6","7","8","9","0","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"};
 int question_state;
 string olv;
 sound tuts;

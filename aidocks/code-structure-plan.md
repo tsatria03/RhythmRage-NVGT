@@ -6,7 +6,7 @@ metadata:
   type: project
 ---
 
-Structure review from 2026-09-23. **Nothing implemented yet.** The dev asked for the plan to be recorded, and each item needs an explicit go-ahead first ([[confirm-before-implementing]]). Update the **Status** line of an item as it lands.
+Structure review from 2026-09-23. **Item 1 implemented 2026-10-24; the rest not started.** The dev asked for the plan to be recorded, and each item needs an explicit go-ahead first ([[confirm-before-implementing]]). Update the **Status** line of an item as it lands.
 
 **Ground rules for every item**
 - These are refactors: **no player-visible change**, so **no changelog entry** ([[changelog-rules]]).
@@ -25,7 +25,7 @@ Structure review from 2026-09-23. **Nothing implemented yet.** The dev asked for
 ---
 
 ## 1. One key-name lookup: `key_from_name()`
-**Status:** not started. **Risk:** very low. **Benefit:** removes ~80 duplicated lines. The allowed-keys error message becomes accurate.
+**Status:** DONE (2026-10-24), playtested and passed. `akeynames` sits under `akeys` in `rg.nvgt`. `key_from_name()` and `key_names_help()` (the new alert text, which points at parser.md) are in `utils.nvgt`. Both `startlev()` callers use them, and the alert now names action vs intersound. A script check confirmed every key name used in every `mypacks/` .lvl/.tut is in `akeynames`, so no shipped pack can newly fail. **Risk:** very low. **Benefit:** removes ~80 duplicated lines (net −153). The allowed-keys error message becomes accurate.
 
 **Problem.** The ~40-line `if/else` chain mapping a key name to a `KEY_*` code appears twice in `startlev()`: for `action … key=<name>` and for `intersound … key_<name>`. Both error messages still say "You can use space, enter, right, left, up or down, for now", which is years out of date.
 

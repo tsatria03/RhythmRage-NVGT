@@ -12,7 +12,16 @@ When a change needs playtesting, guide the dev **one step per message**: name th
 
 **How to apply:** record each step's result below as it comes in, so a later session can resume mid-checklist. Pick test levels by measuring the pack sources in `rg/mypacks/` (same-key gaps, key count) rather than guessing. Prefer the slowest level that still exercises the change: the dev found hardcore "remix 1" too fast (2026-10-24). For "should play the same as before" checks, use a level the dev has already played and has a score for. A level they've never played gives no baseline. Related: [[ask-one-question-at-a-time]], [[known-bugs-2026-09-evaluation]].
 
-## Current checklist: wrong key counts as a miss (option 1), started 2026-10-24
+## Current checklist: refactor item 1, one key-name lookup (no player-visible change), started 2026-10-24
+
+1. Default "rhythm test" (01): enter notes still register. Result: PASSED (2026-10-24), perfect.
+2. Retro world "rhythm & spell" (05): letter keys still register. Result: PASSED (2026-10-24). All keys worked. Score 55% (was 79% before the wrong-key fix), from misspellings: a wrong letter that isn't corrected now costs two misses (wrongkey + the note's fail). This was raised with the dev, who put the score down to their own unfamiliarity with the level and kept the current behavior. Don't raise it again unless they ask.
+3. Extension1 "ghost buster" (01): the interactive tutorial part, which uses intersound key_ names, still responds to its keys. Result: PASSED (2026-10-24).
+4. Optional, only if the dev wants it: a throwaway mypacks copy with key=banana, run via test a pack, should show the new "key not recognized ... You can use enter, space, the arrow keys..." alert. Ask before creating any folder in mypacks. The dev said yes. Created `rg/mypacks/keytest/` (2026-10-24): default 01 + its sounds + the pack-wide sounds, with the first action's key=banana. Result: PASSED (2026-10-24). The alert read exactly as intended, and the folder was deleted afterwards.
+
+**Checklist result: refactor item 1 PASSED all four steps (2026-10-24).**
+
+## Earlier checklist: wrong key counts as a miss (option 1), started 2026-10-24
 
 Default "rhythm test" (01) uses only enter, with notes about 2s apart, so it can test both halves cleanly.
 1. Several times, press space in the middle of a gap, about a second away from any beat. Expect a miss sound each time, but the score is still perfect. Result: PASSED (2026-10-24).

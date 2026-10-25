@@ -1294,91 +1294,9 @@ alert("missing key","Line "+curline+": the intersound key has no name. Write it 
 exit();
 }
 if (what[0]=="key") {
-if (what[1]=="enter") {
-temp.key=KEY_RETURN;
-}
-else if (what[1]=="space") {
-temp.key=KEY_SPACE;
-}
-else if (what[1]=="up") {
-temp.key=KEY_UP;
-}
-else if (what[1]=="down") {
-temp.key=KEY_DOWN;
-}
-else if (what[1]=="right") {
-temp.key=KEY_RIGHT;
-}
-else if (what[1]=="left") {
-temp.key=KEY_LEFT;
-}
-else if (what[1]=="a") {
-temp.key=KEY_A;
-}
-else if (what[1]=="b") {
-temp.key=KEY_B;
-}
-else if (what[1]=="c") {
-temp.key=KEY_C;
-}
-else if (what[1]=="d")temp.key=KEY_D;
-else if (what[1]=="e")temp.key=KEY_E;
-else if (what[1]=="f")temp.key=KEY_F;
-else if (what[1]=="g")temp.key=KEY_G;
-else if (what[1]=="h")temp.key=KEY_H;
-else if (what[1]=="i")temp.key=KEY_I;
-
-else if (what[1]=="j")temp.key=KEY_J;
-
-else if (what[1]=="k")temp.key=KEY_K;
-
-else if (what[1]=="l")temp.key=KEY_L;
-
-else if (what[1]=="m")temp.key=KEY_M;
-
-else if (what[1]=="n")temp.key=KEY_N;
-
-else if (what[1]=="o")temp.key=KEY_O;
-
-else if (what[1]=="p")temp.key=KEY_P;
-
-else if (what[1]=="q")temp.key=KEY_Q;
-
-else if (what[1]=="r")temp.key=KEY_R;
-
-else if (what[1]=="s")temp.key=KEY_S;
-
-else if (what[1]=="t")temp.key=KEY_T;
-
-else if (what[1]=="u")temp.key=KEY_U;
-
-else if (what[1]=="v")temp.key=KEY_V;
-else if (what[1]=="w")temp.key=KEY_W;
-else if (what[1]=="x")temp.key=KEY_X;
-
-else if (what[1]=="y")temp.key=KEY_Y;
-
-else if (what[1]=="z")temp.key=KEY_Z;
-
-else if (what[1]=="1")temp.key=KEY_1;
-
-else if (what[1]=="2")temp.key=KEY_2;
-
-else if (what[1]=="3")temp.key=KEY_3;
-
-else if (what[1]=="4")temp.key=KEY_4;
-
-else if (what[1]=="5")temp.key=KEY_5;
-
-else if (what[1]=="6")temp.key=KEY_6;
-
-else if (what[1]=="7")temp.key=KEY_7;
-
-else if (what[1]=="8")temp.key=KEY_8;
-else if (what[1]=="9")temp.key=KEY_9;
-else if (what[1]=="0")temp.key=KEY_0;
-else {
-alert("key error","key not recognized"+what[1]+", for action on line "+curline+". You can use space, enter, right, left, up or down, for now. For more info read parser commands.txt.");
+temp.key=key_from_name(what[1]);
+if (temp.key==0) {
+alert("key error","key not recognized: "+what[1]+", for intersound on line "+curline+". "+key_names_help());
 exit();
 }
 }
@@ -1507,94 +1425,9 @@ else if (what[0]=="alias") {
 alias=what[1];
 }
 else if (what[0]=="key") {
-if (what[1]=="enter") {
-key=KEY_RETURN;
-}
-else if (what[1]=="space") {
-key=KEY_SPACE;
-}
-else if (what[1]=="up") {
-key=KEY_UP;
-}
-else if (what[1]=="down") {
-key=KEY_DOWN;
-}
-else if (what[1]=="right") {
-key=KEY_RIGHT;
-}
-else if (what[1]=="left") {
-key=KEY_LEFT;
-}
-else if (what[1]=="a") {
-key=KEY_A;
-}
-else if (what[1]=="b") {
-key=KEY_B;
-}
-else if (what[1]=="c") {
-key=KEY_C;
-}
-else if (what[1]=="d")key=KEY_D;
-else if (what[1]=="e")key=KEY_E;
-else if (what[1]=="f")key=KEY_F;
-else if (what[1]=="g")key=KEY_G;
-else if (what[1]=="h")key=KEY_H;
-else if (what[1]=="i")key=KEY_I;
-
-else if (what[1]=="j")key=KEY_J;
-
-else if (what[1]=="k")key=KEY_K;
-
-else if (what[1]=="l")key=KEY_L;
-
-else if (what[1]=="m")key=KEY_M;
-
-else if (what[1]=="n")key=KEY_N;
-
-else if (what[1]=="o")key=KEY_O;
-
-else if (what[1]=="p")key=KEY_P;
-
-else if (what[1]=="q")key=KEY_Q;
-
-else if (what[1]=="r")key=KEY_R;
-
-else if (what[1]=="s")key=KEY_S;
-
-else if (what[1]=="t")key=KEY_T;
-
-else if (what[1]=="u")key=KEY_U;
-
-else if (what[1]=="v")key=KEY_V;
-else if (what[1]=="w")key=KEY_W;
-else if (what[1]=="x")key=KEY_X;
-
-else if (what[1]=="y")key=KEY_Y;
-
-else if (what[1]=="z")key=KEY_Z;
-
-else if (what[1]=="1")key=KEY_1;
-
-else if (what[1]=="2")key=KEY_2;
-
-else if (what[1]=="3")key=KEY_3;
-
-else if (what[1]=="4")key=KEY_4;
-
-else if (what[1]=="5")key=KEY_5;
-
-else if (what[1]=="6")key=KEY_6;
-
-else if (what[1]=="7")key=KEY_7;
-
-else if (what[1]=="8")key=KEY_8;
-
-else if (what[1]=="9")key=KEY_9;
-
-else if (what[1]=="0")key=KEY_0;
-
-else {
-alert("key error","key not recognized"+what[1]+", for action on line "+curline+". You can use space, enter, right, left, up or down, for now. For more info read parser commands.txt.");
+key=key_from_name(what[1]);
+if (key==0) {
+alert("key error","key not recognized: "+what[1]+", for action on line "+curline+". "+key_names_help());
 exit();
 }
 }
