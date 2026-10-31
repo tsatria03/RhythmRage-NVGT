@@ -556,6 +556,143 @@ if (actions[i].type==2 && actions[i].held) return i;
 }
 return -1;
 }
+// Pause a level and open its pause menu. Freezes everything gameplay was sounding: the backing music, the shared
+// sound pool (play/type-1 actions) and every action's own pool (type-2 tap-and-hold). Note timing rides on
+// music.position, which music.pause() freezes, so hits stay aligned. The only wall-clock timer is cooler (the misc
+// cooldown= gate); freeze it too, but only while a cooldown is actually running, since otherwise it is already
+// paused and must stay that way. simple=true is the resume/quit-only menu used by perfect run and soundtrack.
+// Returns the choice. On quit or restart the level's sounds are already silenced, so nothing keeps playing after
+// escape; on resume everything carries on from where it paused.
+string level_pause(bool simple) {
+music.pause();
+pool.pause_all();
+for (uint i=0;i<actions.length();i++) actions[i].apool.pause_all();
+if (cooldown) cooler.pause();
+string pr=pause_menu(simple);
+if (pr=="quit" or pr=="restart") {
+music.stop();
+pool.destroy_all();
+for (uint i=0;i<actions.length();i++) actions[i].apool.destroy_all();
+}
+else {
+music.play();
+pool.resume_all();
+for (uint i=0;i<actions.length();i++) actions[i].apool.resume_all();
+if (cooldown) cooler.resume();
+}
+return pr;
+}
+// The score screen after a level: the suspense ticks, the verdict and jingle, saving a new best, and the
+// beat-the-pack prize. Perfect runs and debug mode have no result.
+void show_result() {
+if (!perfectrun and !debugmode) {
+int oldwell=0;
+double total=good+bad;
+if (total!=0 or good!=0) {
+double wellc=100/total*good;
+int well=round(wellc,0);
+if (well>=super_n and !perfect) {
+oldwell=well;
+well=super_n-1;
+}
+nopack();
+if (!creatingpack && well>=ok_n) cash+=well;
+if (lang==1) rd.say("let's see...");
+if (lang==2) rd.say("veamos...");
+com="";
+// The four calc1 ticks build suspense while the (already computed) score is "worked out". Pressing enter skips
+// the ticking and jumps straight to the final verdict sound. Each tick plays, then waits - and that wait is
+// interruptible, so a skip during any of them breaks out to the calc2/calc3 sting below.
+bool skipcalc=false;
+pool.play_stationary("calc1",false);
+if (skippable_wait(random(150,300))) skipcalc=true;
+if (!skipcalc) { pool.play_stationary("calc1",false); skipcalc=skippable_wait(random(350,600)); }
+if (!skipcalc) { pool.play_stationary("calc1",false); skipcalc=skippable_wait(random(650,800)); }
+if (!skipcalc) { pool.play_stationary("calc1",false); skipcalc=skippable_wait(random(450,600)); }
+// The final verdict sound always plays, whether or not the ticking was skipped.
+if (good>bad) {
+pool.play_stationary("calc3",false);
+wait(random(1500,3000));
+}
+else {
+pool.play_stationary("calc2",false);
+wait(random(1000,2400));
+}
+yespack();
+sound levjing;
+timer tinfo;
+string message;
+int val;
+if (well==100) {
+val=4;
+levjing.load(perfectjng);
+if (lang==1) message="That was perfect! Nice!";
+if (lang==2) message="Genial! Lo has hecho perfecto!";
+}
+else if (well<=99 and well>=super_n) {
+val=3;
+levjing.load(super);
+if (lang==1) message="Pretty good!"+well+" percent!";
+if (lang==2) message="Muy bien!"+well+" por ciento!";
+}
+else if (well<=super_n-1 and well>=ok_n) {
+val=2;
+levjing.load(okjng);
+if (lang==1) message="Well... ok. "+well+" percent.";
+if (lang==2) message="Bueno... Bien. "+well+" por ciento.";
+}
+else if (well<ok_n) {
+val=1;
+levjing.load(failjng);
+if (lang==1) message="That was terrible! "+well+" percent.";
+if (lang==2) message="Patético! Has jugado muy mal! "+well+" por ciento.";
+}
+if (oldwell!=0) {
+if (lang==2) {
+message+=". Vaya, hiciste mal alguna parte importante... Eso no te ha ayudado. es una lástima, porque tenías "+well+" por ciento.";
+}
+if (lang==1) {
+message+=". Pitty, you failed something important in this level... This will not help you. A pitty because you had "+oldwell+" percent.";
+}
+}
+rd.say(message);
+wait(600);
+// The result jingle is really pack music, so page up/down can raise or lower it while it plays, just like the
+// level's backing music. Its volume is independent of the level music and isn't saved between results.
+levjing.play();
+okval=val;
+tinfo.restart();
+while (!key_pressed(KEY_RETURN) and !key_pressed(KEY_ESCAPE)) {
+if (key_repeating(KEY_NEXT)) levjing.volume=levjing.volume-3;
+if (key_repeating(KEY_PRIOR)) levjing.volume=levjing.volume+3;
+if (tinfo.elapsed>=10000) {
+tinfo.restart();
+rd.say(message);
+if (lang==1) rd.say("press enter to continue...");
+if (lang==2) rd.say("Pulsa enter para continuar...");
+}
+wait(5);
+}
+// Save the result as a new best when the tier improves, or when it ties the tier but beats the stored percentage,
+// so the level select can announce your best score. get_percent returns -1 for an unrecorded score, so the first
+// percentage on an already-passed level (e.g. one from an old, tier-only save) always records.
+int prevtier=get_level(lname);
+int prevpct=get_percent(lname);
+if (!creatingpack and (val>prevtier or (val==prevtier and well>prevpct))) {
+set_level(lname,val,pack,well);
+}
+}
+else {
+rd.say("I cannot calculate your result ...");
+wait(1000);
+}
+if (okval>1 and last and !creatingpack) {
+playintro("win_pack");
+if (lang==1) get_ach("You beat the "+pack+" pack!");
+if (lang==2) get_ach("has completado el pack "+pack+"!");
+}
+}
+}
 void loadlev(string name,int volume) {
 perfect=true;
 if (tutorial) {
@@ -629,68 +766,21 @@ if (keys[0]==KEY_END && creatingpack) {
 rd.say(music.position);
 }
 else if (keys[0]==KEY_ESCAPE) {
-if (perfectrun or musiconly) {
-// Perfect run and soundtrack are passive listen modes, but escape still opens a pause menu so you don't leave
-// by accident. There's nothing to skip or restart here, so it offers only resume and quit (simple=true).
-// Freeze the same audio a real playthrough does: the backing music, the shared pool, and each action's pool.
-music.pause();
-pool.pause_all();
-for (uint i=0;i<actions.length();i++) actions[i].apool.pause_all();
-if (cooldown) cooler.pause();
-string pr=pause_menu(true);
+// Escape opens the pause menu. The passive listen modes (perfect run and soundtrack) get the simple menu, with
+// just resume and quit, since there's nothing to restart. level_pause() freezes and restores the audio itself.
+string pr=level_pause(perfectrun or musiconly);
 if (pr=="quit") {
-// Silence everything before leaving so nothing keeps sounding after escape.
-music.stop();
-pool.destroy_all();
-for (uint i=0;i<actions.length();i++) actions[i].apool.destroy_all();
 if (creatingpack and com!="") exit();
 else startgame(1);
-}
-else {
-// resume: unfreeze and carry on listening from where we paused.
-music.play();
-pool.resume_all();
-for (uint i=0;i<actions.length();i++) actions[i].apool.resume_all();
-if (cooldown) cooler.resume();
-}
-}
-else {
-// A real playthrough: pause and open the pause menu. Freeze everything gameplay was sounding - the backing
-// music, the shared sound pool (play/type-1 actions) and every action's own pool (type-2 tap-and-hold).
-music.pause();
-pool.pause_all();
-for (uint i=0;i<actions.length();i++) actions[i].apool.pause_all();
-// Note timing rides on music.position, which is frozen by music.pause(), so hits stay aligned. The only
-// wall-clock timer is cooler (the misc cooldown= gate); freeze it too, but only while a cooldown is actually
-// running - otherwise it is already paused and must stay that way.
-if (cooldown) cooler.pause();
-string pr=pause_menu();
-if (pr=="quit") {
-// Silence everything the level was playing before leaving so nothing keeps sounding after escape.
-music.stop();
-pool.destroy_all();
-for (uint i=0;i<actions.length();i++) actions[i].apool.destroy_all();
-if (creatingpack and com!="") exit();
-else startgame(1);
+return;
 }
 else if (pr=="restart") {
-// Replay the current level from the top. Stop everything first, then re-parse via startlev (actions/sounds
-// get consumed during play, so we can't reuse them), and set replaying so startlev skips the choice screen.
-music.stop();
-pool.destroy_all();
-for (uint i=0;i<actions.length();i++) actions[i].apool.destroy_all();
+// Replay the current level from the top: re-parse via startlev (actions/sounds get consumed during play, so we
+// can't reuse them), and set replaying so startlev skips the choice screen.
 replaying=true;
 restarted=true;
 startlev(olv);
 return;
-}
-else {
-// resume: unfreeze and carry on playing from where we paused.
-music.play();
-pool.resume_all();
-for (uint i=0;i<actions.length();i++) actions[i].apool.resume_all();
-if (cooldown) cooler.resume();
-}
 }
 }
 if (iskey(keys[0]) && lasta!=100000000 and keys_down().length()==1) {
@@ -816,113 +906,7 @@ while (check_playing_sounds()) {
 wait(5);
 }
 //calculate here
-if (!perfectrun and !debugmode) {
-int oldwell=0;
-double total=good+bad;
-if (total!=0 or good!=0) {
-double wellc=100/total*good;
-int well=round(wellc,0);
-if (well>=super_n and !perfect) {
-oldwell=well;
-well=super_n-1;
-}
-nopack();
-if (!creatingpack && well>=ok_n) cash+=well;
-if (lang==1) rd.say("let's see...");
-if (lang==2) rd.say("veamos...");
-com="";
-// The four calc1 ticks build suspense while the (already computed) score is "worked out". Pressing enter skips
-// the ticking and jumps straight to the final verdict sound. Each tick plays, then waits - and that wait is
-// interruptible, so a skip during any of them breaks out to the calc2/calc3 sting below.
-bool skipcalc=false;
-pool.play_stationary("calc1",false);
-if (skippable_wait(random(150,300))) skipcalc=true;
-if (!skipcalc) { pool.play_stationary("calc1",false); skipcalc=skippable_wait(random(350,600)); }
-if (!skipcalc) { pool.play_stationary("calc1",false); skipcalc=skippable_wait(random(650,800)); }
-if (!skipcalc) { pool.play_stationary("calc1",false); skipcalc=skippable_wait(random(450,600)); }
-// The final verdict sound always plays, whether or not the ticking was skipped.
-if (good>bad) {
-pool.play_stationary("calc3",false);
-wait(random(1500,3000));
-}
-else {
-pool.play_stationary("calc2",false);
-wait(random(1000,2400));
-}
-yespack();
-sound levjing;
-timer tinfo;
-string message;
-int val;
-if (well==100) {
-val=4;
-levjing.load(perfectjng);
-if (lang==1) message="That was perfect! Nice!";
-if (lang==2) message="Genial! Lo has hecho perfecto!";
-}
-else if (well<=99 and well>=super_n) {
-val=3;
-levjing.load(super);
-if (lang==1) message="Pretty good!"+well+" percent!";
-if (lang==2) message="Muy bien!"+well+" por ciento!";
-}
-else if (well<=super_n-1 and well>=ok_n) {
-val=2;
-levjing.load(okjng);
-if (lang==1) message="Well... ok. "+well+" percent.";
-if (lang==2) message="Bueno... Bien. "+well+" por ciento.";
-}
-else if (well<ok_n) {
-val=1;
-levjing.load(failjng);
-if (lang==1) message="That was terrible! "+well+" percent.";
-if (lang==2) message="Patético! Has jugado muy mal! "+well+" por ciento.";
-}
-if (oldwell!=0) {
-if (lang==2) {
-message+=". Vaya, hiciste mal alguna parte importante... Eso no te ha ayudado. es una lástima, porque tenías "+well+" por ciento.";
-}
-if (lang==1) {
-message+=". Pitty, you failed something important in this level... This will not help you. A pitty because you had "+oldwell+" percent.";
-}
-}
-rd.say(message);
-wait(600);
-// The result jingle is really pack music, so page up/down can raise or lower it while it plays, just like the
-// level's backing music. Its volume is independent of the level music and isn't saved between results.
-levjing.play();
-okval=val;
-tinfo.restart();
-while (!key_pressed(KEY_RETURN) and !key_pressed(KEY_ESCAPE)) {
-if (key_repeating(KEY_NEXT)) levjing.volume=levjing.volume-3;
-if (key_repeating(KEY_PRIOR)) levjing.volume=levjing.volume+3;
-if (tinfo.elapsed>=10000) {
-tinfo.restart();
-rd.say(message);
-if (lang==1) rd.say("press enter to continue...");
-if (lang==2) rd.say("Pulsa enter para continuar...");
-}
-wait(5);
-}
-// Save the result as a new best when the tier improves, or when it ties the tier but beats the stored percentage,
-// so the level select can announce your best score. get_percent returns -1 for an unrecorded score, so the first
-// percentage on an already-passed level (e.g. one from an old, tier-only save) always records.
-int prevtier=get_level(lname);
-int prevpct=get_percent(lname);
-if (!creatingpack and (val>prevtier or (val==prevtier and well>prevpct))) {
-set_level(lname,val,pack,well);
-}
-}
-else {
-rd.say("I cannot calculate your result ...");
-wait(1000);
-}
-if (okval>1 and last and !creatingpack) {
-playintro("win_pack");
-if (lang==1) get_ach("You beat the "+pack+" pack!");
-if (lang==2) get_ach("has completado el pack "+pack+"!");
-}
-}
+show_result();
 startgame(1);
 return;
 }

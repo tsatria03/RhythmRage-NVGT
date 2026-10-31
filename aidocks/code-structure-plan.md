@@ -6,13 +6,14 @@ metadata:
   type: project
 ---
 
-Structure review from 2026-09-23. **Item 1 implemented 2026-10-24; the rest not started.** The dev asked for the plan to be recorded, and each item needs an explicit go-ahead first ([[confirm-before-implementing]]). Update the **Status** line of an item as it lands.
+Structure review from 2026-09-23. **Item 1 DONE 2026-10-24; item 2 in progress (section 1 of 7 done 2026-10-31); items 3-5 not started.** The dev asked for the plan to be recorded, and each item needs an explicit go-ahead first ([[confirm-before-implementing]]). Update the **Status** line of an item as it lands.
 
 **Ground rules for every item**
 - These are refactors: **no player-visible change**, so **no changelog entry** ([[changelog-rules]]).
 - **One item per commit**, so each gets its own test pass. The dev compiles and tests ([[dont-compile-yourself]]).
 - Keep the code's style: brace-less `if`s ([[angelscript-braceless-if]]), one `key_pressed` read per key per frame ([[nvgt-key-pressed-oneshot]]), a `wait()` at the top of any new input loop ([[nvgt-busy-loop-needs-wait]]).
 - Line numbers below are from 2026-09-23 and will drift. Find code by function name.
+- **After every scripted move, check brace balance per function**: brace-count from each moved/edited function's first line to where depth returns to 0, and confirm it ends where you expect. Section 1's first build (2026-10-31) failed with "Expected identifier / Unexpected token" at the end of loadlev. The cause was one extra `}` left behind when the escape branch was replaced: I wrongly assumed the brace after it closed `if (keys.length()==1)`, but the `iskey` block sits inside that `if`. The dev only sees this as `rg/errors.txt` after compiling.
 
 ## Measurements (2026-09-23)
 
@@ -38,7 +39,16 @@ Structure review from 2026-09-23. **Item 1 implemented 2026-10-24; the rest not 
 **Test.** Every pack loads. A level using letter and number keys plays. `key=banana` shows the new alert. The extension1 interactive tutorial (`key_enter`) still works.
 
 ## 2. Split `startlev()` into per-command handlers, and `loadlev()` into loop plus result
-**Status:** not started. **Risk:** medium (large move, but no logic change). **Benefit:** biggest. Almost every bug found on 2026-09-22 was in `startlev()`.
+**Status:** IN PROGRESS (started 2026-10-24). The dev asked for it to be done **in sections, testing one section at a time**. **Dev rule (2026-10-24):** if any section turns out to change something a player would notice, document it, i.e. add a changelog entry ([[changelog-rules]]). Do it once that section is built and its playtest confirms the change, not before. So far: section 1 has nothing player-visible (the added `return` only matters if `startgame()` ever returned). Each section gets its own build, playtest ([[guided-playtesting]]) and commit before the next one starts.
+1. **loadlev: pause + result.** DONE: implemented 2026-10-24, brace fix and playtest passed 2026-10-31. `string level_pause(bool simple)` holds the freeze, `pause_menu`, silence-on-quit/restart and resume code that used to be copied in both escape branches. The loop calls it with `perfectrun or musiconly` and returns after `startgame(1)` on quit (the missing `return`). `void show_result()` is the old `//calculate here` block, moved verbatim.
+2. **Tutorial simple commands** into handlers: `text`, `say`, `wait`, `playwait`, `stopsounds`, `fade`, `exit`, `stop`, `seek`, tutorial `music`, tutorial `play` (keeps its `wait(3); i--; continue;` re-run). Not started.
+3. **Interactive tutorials:** `interactive` (setup + run loop, which can `return` out of startlev on skip/quit) and `intersound`. Not started.
+4. **Level settings:** `misc`, `debug`, level `music` (changes `ln`, sets `lev_vol`). Not started.
+5. **Notes:** level `play` and `action`. Not started.
+6. **Macros:** `!`/`@`, which append to `macrostuff`. Not started.
+7. **Setup + dispatch:** the play/tutorial/perfect/soundtrack choice menu into its own function, the `parse_state` class, and the final per-line dispatch. Not started.
+
+**Risk:** medium (large move, but no logic change). **Benefit:** biggest. Almost every bug found on 2026-09-22 was in `startlev()`.
 
 **How `startlev()` is shaped today (must be preserved exactly).**
 - Setup: resets, the play/tutorial/perfect-run/soundtrack choice menu, `replaying` handling, loading the file.

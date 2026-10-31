@@ -12,7 +12,18 @@ When a change needs playtesting, guide the dev **one step per message**: name th
 
 **How to apply:** record each step's result below as it comes in, so a later session can resume mid-checklist. Pick test levels by measuring the pack sources in `rg/mypacks/` (same-key gaps, key count) rather than guessing. Prefer the slowest level that still exercises the change: the dev found hardcore "remix 1" too fast (2026-10-24). For "should play the same as before" checks, use a level the dev has already played and has a score for. A level they've never played gives no baseline. Related: [[ask-one-question-at-a-time]], [[known-bugs-2026-09-evaluation]].
 
-## Current checklist: refactor item 1, one key-name lookup (no player-visible change), started 2026-10-24
+## Current checklist: refactor item 2, section 1 (loadlev pause + result; no player-visible change), started 2026-10-24
+
+Default "rhythm test" (01) for all steps.
+1. Finish the level normally. The score screen still plays the "let's see" ticks, verdict, message and jingle. Enter skips the ticks, page up/down changes the jingle volume, and enter leaves to the level select. Result: PASSED (2026-10-31), after the brace fix let it compile.
+2. During the level, escape, then resume. The music and notes carry on in time. Result: PASSED (2026-10-31).
+3. Escape, then restart. The level starts over straight away, with no choice menu. Result: PASSED (2026-10-31).
+4. Escape, then quit. Back to the level select, with no sounds left playing. Result: PASSED (2026-10-31).
+5. Perfect run: escape shows only resume and quit, and both work. Result: PASSED (2026-10-31).
+
+**Checklist result: section 1 PASSED all five steps (2026-10-31). No player-visible change, so no changelog entry.**
+
+## Earlier checklist: refactor item 1, one key-name lookup (no player-visible change), started 2026-10-24
 
 1. Default "rhythm test" (01): enter notes still register. Result: PASSED (2026-10-24), perfect.
 2. Retro world "rhythm & spell" (05): letter keys still register. Result: PASSED (2026-10-24). All keys worked. Score 55% (was 79% before the wrong-key fix), from misspellings: a wrong letter that isn't corrected now costs two misses (wrongkey + the note's fail). This was raised with the dev, who put the score down to their own unfamiliarity with the level and kept the current behavior. Don't raise it again unless they ask.
