@@ -1121,7 +1121,7 @@ if (lang==1) alert("error","Error opening the level from the pack file.");
 if (lang==2) alert("error","Hubo un error al abrir el archivo del nivel desde el paquete.");
 exit();
 }
-string the_string=f.read();
+string the_string=strip_bom(f.read());
 wait_time=0;
 for (uint i=1;i<3;i++) {
 if (tutorial) {

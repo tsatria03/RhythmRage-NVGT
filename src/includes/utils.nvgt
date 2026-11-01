@@ -216,11 +216,19 @@ set_sound_storage(cur_pack_file());
 set_sound_decryption_key(pack+"guillemandoriolftw",false);
 package.open(cur_pack_file());
 }
+// Remove the invisible byte-order mark (the bytes EF BB BF) that some text editors put at the start of a file saved
+// as UTF-8. Left in, it sticks to the first word, so a script's first line ("text Welcome...") isn't recognised as a
+// command and is silently skipped. Strings index by byte here, so the mark is built byte by byte.
+string strip_bom(string contents) {
+string bom=ascii_to_character(0xEF)+ascii_to_character(0xBB)+ascii_to_character(0xBF);
+if (string_left(contents,3)==bom) return string_trim_left(contents,3);
+return contents;
+}
 string get_line(string filename,int number) {
 datastream@ f;
 @f=package.get_file(filename);
 if (@f==null) return "";
-string contents=f.read();
+string contents=strip_bom(f.read());
 string[] lines=string_split(contents,"\r\n",false);
 return lines[number];
 }
