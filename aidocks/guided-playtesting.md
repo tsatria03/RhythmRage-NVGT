@@ -14,8 +14,10 @@ When a change needs playtesting, guide the dev **one step per message**: name th
 
 ## Current checklist: tutorial first-line (BOM) fix, started 2026-10-31
 
-1. Default "rhythm test" tutorial: the first line heard is now "Welcome to the rhythm test!", followed by "This game combines music and coordination...". Result: pending.
-2. Default "forsa barsa" tutorial (04.tut, also had a BOM): opens with "Hello, we are at camp Nou". Result: pending.
+1. Default "rhythm test" tutorial: the first line heard is now "Welcome to the rhythm test!", followed by "This game combines music and coordination...". Result: PASSED (2026-10-31).
+2. Default "forsa barsa" tutorial (04.tut, also had a BOM): opens with "Hello, we are at camp Nou". Result: PASSED (2026-10-31).
+
+**Checklist result: BOM fix PASSED both steps (2026-10-31).**
 
 ## Earlier checklist: refactor item 2, section 2 (tutorial simple commands; no player-visible change), started 2026-10-31
 
