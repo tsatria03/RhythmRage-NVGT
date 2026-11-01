@@ -12,7 +12,14 @@ When a change needs playtesting, guide the dev **one step per message**: name th
 
 **How to apply:** record each step's result below as it comes in, so a later session can resume mid-checklist. Pick test levels by measuring the pack sources in `rg/mypacks/` (same-key gaps, key count) rather than guessing. Prefer the slowest level that still exercises the change: the dev found hardcore "remix 1" too fast (2026-10-24). For "should play the same as before" checks, use a level the dev has already played and has a score for. A level they've never played gives no baseline. Related: [[ask-one-question-at-a-time]], [[known-bugs-2026-09-evaluation]].
 
-## Current checklist: refactor item 2, section 1 (loadlev pause + result; no player-visible change), started 2026-10-24
+## Current checklist: refactor item 2, section 2 (tutorial simple commands; no player-visible change), started 2026-10-31
+
+1. Default "rhythm test" tutorial (01.tut uses text, say, wait, music, timed play, fade): reading lines, spoken "say" lines, the timed example sounds, and the fade all behave as before, and q/escape still work while it waits between cues. Also ask whether the very first line "Welcome to the rhythm test!" is read. If not, that's the suspected BOM bug #7 in [[known-bugs-2026-09-evaluation]], which already existed before this section. Result so far: the first line is skipped (BOM bug confirmed). Everything else behaved as before. PASSED (2026-10-31).
+2. Default "pipes" tutorial (12.tut): the timed hammer/slide example plays in time with the music, then "Hold!"/"Let go!". Result: PASSED (2026-10-31).
+
+**Checklist result: section 2 PASSED both steps (2026-10-31). No player-visible change from the refactor itself. The skipped first line is the existing BOM bug, tracked separately.**
+
+## Earlier checklist: refactor item 2, section 1 (loadlev pause + result; no player-visible change), started 2026-10-24
 
 Default "rhythm test" (01) for all steps.
 1. Finish the level normally. The score screen still plays the "let's see" ticks, verdict, message and jingle. Enter skips the ticks, page up/down changes the jingle volume, and enter leaves to the level select. Result: PASSED (2026-10-31), after the brace fix let it compile.

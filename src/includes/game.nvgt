@@ -927,6 +927,92 @@ if (words.length()>=needed) return;
 alert("missing parts","Line "+curline+": the "+words[0]+" command is missing something. Write it as: "+usage);
 exit();
 }
+// Tutorial command handlers. startlev() calls these from its per-line command chains, and each one handles a single
+// tutorial command line, split into words.
+// The text after a tutorial text/say command, joined back into one string, with accented letters repaired for
+// scripts that were saved in the wrong encoding.
+string tutorial_line_text(string[]@ words) {
+string text="";
+for (uint i=1;i<words.length();i++) {
+text+=words[i]+" ";
+}
+text=string_replace(text,"Ã¡","á",true);
+text=string_replace(text,"Ã³","ó",true);
+text=string_replace(text,"Ã±","ñ",true);
+text=string_replace(text,"Ãº","ú",true);
+text=string_replace(text,"Ã­","í",true);
+text=string_replace(text,"Ã©","é",true);
+return text;
+}
+// text: a line the player reads through, with the next-line sound.
+void parse_tutorial_text(string[]@ words) {
+if (words.length()==1) {
+alert("no text","line "+curline+" has no tutorial text.");
+exit();
+}
+rd.add(tutorial_line_text(words),false,true);
+tuten.stop();
+tuten.play();
+}
+// say: spoken straight away, without waiting for the player.
+void parse_tutorial_say(string[]@ words) {
+if (words.length()==1) {
+alert("no say text","line "+curline+" has no tutorial say text.");
+exit();
+}
+rd.say(tutorial_line_text(words));
+}
+// play sound, or play sound time to cue it at a point in the tutorial music. Returns true when that point hasn't
+// been reached yet, so startlev re-runs the same line. The short yield lets NVGT pump input so q/escape still work
+// while a tutorial waits between cues, and stops this from pinning a CPU core.
+bool parse_tutorial_play(string[]@ words) {
+if (words.length()==2) {
+pool.play_stationary(words[1],false);
+}
+else if (words.length()==3) {
+if (!tutem.playing) {
+alert("bad command","You have a bad play command on line "+curline+". The music isn't playing or sound could not be found.");
+exit();
+}
+if (tutem.position>=string_to_number(words[2])) {
+pool.play_stationary(words[1],false);
+}
+else {
+wait(3);
+return true;
+}
+}
+return false;
+}
+void parse_tutorial_wait(string[]@ words) {
+check_parts(words,2,"wait milliseconds");
+wait(string_to_number(words[1]));
+}
+void parse_tutorial_playwait(string[]@ words) {
+check_parts(words,2,"playwait sound");
+playintro(words[1]);
+}
+void parse_tutorial_seek(string[]@ words) {
+if (words.length()!=2 or string_to_number(words[1])>tutem.length) {
+alert("seek error","bad seek at line "+curline+".");
+exit();
+}
+else {
+tutem.seek(string_to_number(words[1]));
+}
+}
+// music file [volume] [seek position]: the tutorial's backing music.
+void parse_tutorial_music(string[]@ words) {
+check_parts(words,2,"music file, then optionally volume and a seek position");
+tutem.load(words[1]);
+if (!tutem.active) {
+alert("tutorial error","tutorial music not found. line "+curline);
+exit();
+}
+if (words.length()>=3) tutem.volume=string_to_number(words[2]);
+if (words.length()>=4) tutem.seek(string_to_number(words[3]));
+tutem.play();
+}
 void startlev(string lv) {
 actiontimes.resize(0);
 strict=false;
@@ -1081,32 +1167,17 @@ ach=string_trim_left(lines[i],result+4);
 }
 //newcoms
 if (words[0]=="play" and tutorial) {
-if (words.length()==2) {
-pool.play_stationary(words[1],false);
-}
-else if (words.length()==3) {
-if (!tutem.playing) {
-alert("bad command","You have a bad play command on line "+curline+". The music isn't playing or sound could not be found.");
-exit();
-}
-if (tutem.position>=string_to_number(words[2])) {
-pool.play_stationary(words[1],false);
-}
-else {
-// Not time for this cue yet: re-run the same line. The short yield lets NVGT pump input so q/escape still work
-// while a tutorial waits between cues, and stops this from pinning a CPU core.
-wait(3);
+// Not time for this cue yet: re-run the same line.
+if (parse_tutorial_play(words)) {
 i--;
 continue;
-}
 }
 }
 else if (words[0]=="stopsounds") {
 pool.destroy_all();
 }
 else if (words[0]=="wait" && tutorial) {
-check_parts(words,2,"wait milliseconds");
-wait(string_to_number(words[1]));
+parse_tutorial_wait(words);
 }
 else if (words[0]=="interactive" && tutorial) {
 string[] params=words;
@@ -1293,28 +1364,11 @@ intersounds.insert_last(temp);
 continue;
 }
 else if (words[0]=="playwait" && tutorial) {
-check_parts(words,2,"playwait sound");
-playintro(words[1]);
+parse_tutorial_playwait(words);
 }
 
 if (words[0]=="text" && tutorial) {
-string text="";
-if (words.length()==1) {
-alert("no text","line "+curline+" has no tutorial text.");
-exit();
-}
-for (uint i=1;i<words.length();i++) {
-text+=words[i]+" ";
-}
-text=string_replace(text,"Ã¡","á",true);
-text=string_replace(text,"Ã³","ó",true);
-text=string_replace(text,"Ã±","ñ",true);
-text=string_replace(text,"Ãº","ú",true);
-text=string_replace(text,"Ã­","í",true);
-text=string_replace(text,"Ã©","é",true);
-rd.add(text,false,true);
-tuten.stop();
-tuten.play();
+parse_tutorial_text(words);
 }
 else if (words[0]=="misc" && !tutorial) {
 for (uint i=1;i<words.length();i++) {
@@ -1514,13 +1568,7 @@ if (temp.end!=0) actiontimes.insert_last(temp.end);
 actions.insert_last(temp);
 }//action word
 else if (words[0]=="seek" && tutorial) {
-if (words.length()!=2 or string_to_number(words[1])>tutem.length) {
-alert("seek error","bad seek at line "+curline+".");
-exit();
-}
-else {
-tutem.seek(string_to_number(words[1]));
-}
+parse_tutorial_seek(words);
 }
 else if (words[0]=="debug" && !tutorial) {
 for (uint i=1;i<words.length();i++) {
@@ -1611,32 +1659,10 @@ temp.failreq=freq;
 sounds.insert_last(temp);
 }//play word
 else if (words[0]=="music" && tutorial) {
-check_parts(words,2,"music file, then optionally volume and a seek position");
-tutem.load(words[1]);
-if (!tutem.active) {
-alert("tutorial error","tutorial music not found. line "+curline);
-exit();
-}
-if (words.length()>=3) tutem.volume=string_to_number(words[2]);
-if (words.length()>=4) tutem.seek(string_to_number(words[3]));
-tutem.play();
+parse_tutorial_music(words);
 }
 else if (words[0]=="say" && tutorial) {
-string text="";
-if (words.length()==1) {
-alert("no say text","line "+curline+" has no tutorial say text.");
-exit();
-}
-for (uint i=1;i<words.length();i++) {
-text+=words[i]+" ";
-}
-text=string_replace(text,"Ã¡","á",true);
-text=string_replace(text,"Ã³","ó",true);
-text=string_replace(text,"Ã±","ñ",true);
-text=string_replace(text,"Ãº","ú",true);
-text=string_replace(text,"Ã­","í",true);
-text=string_replace(text,"Ã©","é",true);
-rd.say(text);
+parse_tutorial_say(words);
 }
 else if (words[0]=="fade" && tutorial) {
 if (tutem.playing) fade2(tutem);

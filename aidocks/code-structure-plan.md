@@ -6,7 +6,7 @@ metadata:
   type: project
 ---
 
-Structure review from 2026-09-23. **Item 1 DONE 2026-10-24; item 2 in progress (section 1 of 7 done 2026-10-31); items 3-5 not started.** The dev asked for the plan to be recorded, and each item needs an explicit go-ahead first ([[confirm-before-implementing]]). Update the **Status** line of an item as it lands.
+Structure review from 2026-09-23. **Item 1 DONE 2026-10-24; item 2 in progress (sections 1-2 of 7 done 2026-10-31); items 3-5 not started.** The dev asked for the plan to be recorded, and each item needs an explicit go-ahead first ([[confirm-before-implementing]]). Update the **Status** line of an item as it lands.
 
 **Ground rules for every item**
 - These are refactors: **no player-visible change**, so **no changelog entry** ([[changelog-rules]]).
@@ -41,7 +41,7 @@ Structure review from 2026-09-23. **Item 1 DONE 2026-10-24; item 2 in progress (
 ## 2. Split `startlev()` into per-command handlers, and `loadlev()` into loop plus result
 **Status:** IN PROGRESS (started 2026-10-24). The dev asked for it to be done **in sections, testing one section at a time**. **Dev rule (2026-10-24):** if any section turns out to change something a player would notice, document it, i.e. add a changelog entry ([[changelog-rules]]). Do it once that section is built and its playtest confirms the change, not before. So far: section 1 has nothing player-visible (the added `return` only matters if `startgame()` ever returned). Each section gets its own build, playtest ([[guided-playtesting]]) and commit before the next one starts.
 1. **loadlev: pause + result.** DONE: implemented 2026-10-24, brace fix and playtest passed 2026-10-31. `string level_pause(bool simple)` holds the freeze, `pause_menu`, silence-on-quit/restart and resume code that used to be copied in both escape branches. The loop calls it with `perfectrun or musiconly` and returns after `startgame(1)` on quit (the missing `return`). `void show_result()` is the old `//calculate here` block, moved verbatim.
-2. **Tutorial simple commands** into handlers: `text`, `say`, `wait`, `playwait`, `stopsounds`, `fade`, `exit`, `stop`, `seek`, tutorial `music`, tutorial `play` (keeps its `wait(3); i--; continue;` re-run). Not started.
+2. **Tutorial simple commands** into handlers: `text`, `say`, `wait`, `playwait`, `stopsounds`, `fade`, `exit`, `stop`, `seek`, tutorial `music`, tutorial `play` (keeps its `wait(3); i--; continue;` re-run). DONE: implemented and playtested 2026-10-31. The handlers are `parse_tutorial_text/say/play/wait/playwait/seek/music` plus `tutorial_line_text()` (the shared join + accent repair), placed after `check_parts()`. `parse_tutorial_play` returns true for "re-run this line" and the caller does `i--; continue;`. The one-line `stopsounds`/`fade`/`exit`/`stop` branches stay inline for now. Section 7 can fold them into the dispatch.
 3. **Interactive tutorials:** `interactive` (setup + run loop, which can `return` out of startlev on skip/quit) and `intersound`. Not started.
 4. **Level settings:** `misc`, `debug`, level `music` (changes `ln`, sets `lev_vol`). Not started.
 5. **Notes:** level `play` and `action`. Not started.
